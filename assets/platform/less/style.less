@@ -1,0 +1,225 @@
+/**
+ * Part of the Platform application.
+ *
+ * NOTICE OF LICENSE
+ *
+ * Licensed under the Cartalyst PSL License.
+ *
+ * This source file is subject to the Cartalyst PSL License that is
+ * bundled with this package in the license.txt file.
+ *
+ * @package    Platform
+ * @version    2.0.0
+ * @author     Cartalyst LLC
+ * @license    Cartalyst PSL
+ * @copyright  (c) 2011-2014, Cartalyst LLC
+ * @link       http://cartalyst.com
+ */
+
+@import '../../bootstrap/less/bootstrap';
+@import '../../font-awesome/less/font-awesome';
+
+html,
+body {
+	height: 100%;
+}
+
+/* Wrapper for page content to push down footer */
+#wrap {
+	height: auto !important;
+	height: 100%;
+	margin: 0 auto -106px;
+	min-height: 100%;
+	padding: 0 0 106px;
+}
+
+/* Set the fixed height of the footer here */
+#footer {
+	background-color: #f5f5f5;
+	border-top: 1px solid #e5e5e5;
+	color: #777;
+	padding-top: 25px;
+	padding-bottom: 25px;
+	margin-top: 35px;
+}
+
+/* Algin brand grapic and spacing */
+.navbar-brand {
+	padding-bottom: 11px;
+}
+
+.brand-sm {
+	padding-right: 5px;
+	margin-top: -4px;
+}
+
+.dropdown-submenu {
+	position:relative;
+
+	&>.dropdown-menu {
+		top: 0;
+		left: 100%;
+		margin-top: -6px;
+		margin-left: -1px;
+		-webkit-border-radius: 0 6px 6px 6px;
+		-moz-border-radius: 0 6px 6px 6px;
+		border-radius: 0 6px 6px 6px;
+	}
+
+	&:hover >.dropdown-menu { display: block; }
+
+ 	&>a:after {
+ 		display: block;
+ 		content: " ";
+ 		float: right;
+ 		width: 0;
+ 		height: 0;
+ 		border-color: transparent;
+ 		border-style: solid;
+ 		border-width: 5px 0 5px 5px;
+ 		border-left-color: #cccccc;
+ 		margin-top: 5px;
+ 		margin-right: -10px;
+ 	}
+
+	&:hover>a:after { border-left-color: #ffffff; }
+
+	&.pull-left { float: none; }
+
+	&.pull-left>.dropdown-menu {
+		left: -100%;
+		margin-left: 10px;
+		-webkit-border-radius: 6px 0 6px 6px;
+		-moz-border-radius: 6px 0 6px 6px;
+		border-radius: 6px 0 6px 6px;
+	}
+}
+
+.page-header {
+	margin-top: 0;
+}
+
+.tab-content {
+	padding: 25px;
+	margin-bottom: 25px;
+}
+
+.tab-content.tab-bordered {
+	border: 1px solid #ddd;
+	border-top: none;
+}
+
+.nav-tabs {
+	margin-bottom: 0;
+}
+
+.loading {
+	background-color: rgba(0,0,0,0);
+	opacity: .8;
+	border-radius: 50px;
+	margin:0 auto;
+	animation: spinner 1s infinite linear;
+	-moz-animation: spinner 1s infinite linear;
+	-webkit-animation: spinner 1s infinite linear;
+	border: 4px solid #fff;
+	border-top: 5px solid rgba(0,0,0,1);
+	border-left: 5px solid rgba(0,0,0,1);
+	width: 20px;
+	height: 20px;
+}
+
+@keyframes spinner {
+	0% {
+		-moz-transform: rotate(0deg);
+	}
+
+	100% {
+		-moz-transform: rotate(360deg);
+	};
+}
+
+@-moz-keyframes spinner {
+	0% {
+		-moz-transform: rotate(0deg);
+	}
+
+	100% {
+		-moz-transform: rotate(360deg);
+	};
+}
+
+@-webkit-keyframes spinner {
+	0% {
+		-webkit-transform: rotate(0deg);
+	}
+
+	100% {
+		-webkit-transform: rotate(360deg);
+	};
+}
+
+.pagination-sm {
+	margin-top: 0;
+}
+
+[data-toggle="popover"], [data-toggle="tooltip"] {
+	cursor: pointer;
+}
+
+label .popover-content {
+	font-weight: normal;
+	width: 276px;
+}
+
+table.table {
+	thead th {
+		&.sortable {
+			cursor: pointer;
+			*cursor: hand;
+			position: relative;
+
+			&:before {
+				content: '\f0dc';
+				font-family: FontAwesome;
+				font-style: normal;
+				font-weight: normal;
+				text-decoration: inherit;
+
+				color: #000;
+				font-size: 14px;
+				padding-right: 0.5em;
+				position: absolute;
+				top: 8px;
+				right: 3px;
+			}
+
+			&.asc:before { content: '\f0dd'; }
+			&.desc:before { content: '\f0de'; }
+		}
+	}
+
+	tbody td { vertical-align: middle; }
+}
+
+.well-borderless { border: none; border-radius: none; box-shadow: none; }
+
+.btn-file {
+	position: relative;
+	overflow: hidden;
+
+	input[type=file] {
+		position: absolute;
+		top: 0;
+		right: 0;
+		min-width: 100%;
+		min-height: 100%;
+		font-size: 999px;
+		text-align: right;
+		filter: alpha(opacity=0);
+		opacity: 0;
+		outline: none;
+		background: white;
+		cursor: inherit;
+		display: block;
+	}
+}
