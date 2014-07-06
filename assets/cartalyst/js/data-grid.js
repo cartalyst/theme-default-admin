@@ -42,6 +42,8 @@
 			interpolate : /<%=([\s\S]+?)%>/g,
 			escape      : /<%-([\s\S]+?)%>/g
 		},
+		cache_response: false,
+		live_search: true,
 		scroll: null,
 		search_timeout: 800,
 		hash: true,
@@ -150,12 +152,46 @@
 			// Set _ templates interpolate
 			_.templateSettings = this.opt.template_settings;
 
+			var results_template       = $('[data-template="results"]' + grid).html();
+			var pagination_template    = $('[data-template="pagination"]' + grid).html();
+			var filters_template       = $('[data-template="filters"]' + grid).html();
+			var empty_results_template = $('[data-template="no_results"]' + grid).html();
+			var empty_filters_template = $('[data-template="no_filters"]' + grid).html();
+
+			if (results_template === undefined)
+			{
+				console.error('results template not found.');
+			}
+
+			if (pagination_template === undefined)
+			{
+				console.error('pagination template not found.');
+			}
+
+			if (filters_template === undefined)
+			{
+				console.error('filters template not found.');
+			}
+
+			// Allow empty no_results template
+			if (empty_results_template === undefined)
+			{
+				empty_results_template = "";
+			}
+
+			// Allow empty no_filters template
+			if (empty_filters_template === undefined)
+			{
+				empty_filters_template = "";
+			}
+
 			// Cache the Underscore Templates
 			this.tmpl = {
-				results:    _.template($('[data-template="results"]' + grid).html()),
-				pagination: _.template($('[data-template="pagination"]' + grid).html()),
-				filters:    _.template($('[data-template="filters"]' + grid).html()),
-				empty:      _.template($('[data-template="no_results"]' + grid).html())
+				results:       _.template(results_template),
+				pagination:    _.template(pagination_template),
+				filters:       _.template(filters_template),
+				empty_results: _.template(empty_results_template),
+				empty_filters: _.template(empty_filters_template)
 			};
 		},
 
@@ -368,7 +404,7 @@
 				{
 					self.handleSearchOnSubmit($(this));
 				}
-				else if (e.type === 'keyup' && e.keyCode !== 13 && $(this).find('input').val())
+				else if (e.type === 'keyup' && e.keyCode !== 13 && $(this).find('input').val() && self.opt.live_search)
 				{
 					self.handleLiveSearch($(this));
 				}
@@ -446,6 +482,20 @@
 					last_item = parsed_route[(parsed_route.length - 1)];
 					next_item = parsed_route[(parsed_route.length - 2)];
 
+					if (/threshold/g.test(last_item))
+					{
+						parsed_route = parsed_route.splice(0, (parsed_route.length - 1));
+
+						last_item = parsed_route[(parsed_route.length - 1)];
+					}
+
+					if (/throttle/g.test(last_item))
+					{
+						parsed_route = parsed_route.splice(0, (parsed_route.length - 1));
+
+						last_item = parsed_route[(parsed_route.length - 1)];
+					}
+
 					// Use test to return true/false
 					if (/page/g.test(last_item))
 					{
@@ -499,10 +549,24 @@
 						// Reset applied filters if none are set via the hash
 						self.applied_filters = [];
 
-						self.$filters.empty();
+						self.$filters.html(self.tmpl.empty_filters());
 					}
 				}
 			});
+
+			last_item = _.last(_.compact(current_hash.split('/')));
+
+			if (/threshold/g.test(last_item))
+			{
+				self.extractThresholdFromRoute(last_item);
+
+				last_item = _.last(_.initial(_.compact(current_hash.split('/'))));
+			}
+
+			if (/throttle/g.test(last_item))
+			{
+				self.extractThrottleFromRoute(last_item);
+			}
 
 			if (current_hash.indexOf(self.key) === -1)
 			{
@@ -545,10 +609,12 @@
 				current_hash = '';
 			}
 
-			// #!/grid/key/filters/sorts/page/
-			var filters = self.buildFilterFragment();
-			var sort    = self.buildSortFragment();
-			var page    = self.buildPageFragment();
+			// #!/grid/key/filters/sorts/page/throttle/threshold
+			var filters   = self.buildFilterFragment();
+			var sort      = self.buildSortFragment();
+			var page      = self.buildPageFragment();
+			var throttle  = self.buildThrottleFragment();
+			var threshold = self.buildThresholdFragment();
 
 			if (filters.length > 1)
 			{
@@ -615,6 +681,16 @@
 			if (path.length > 1 && path.substr(0, 4) !== 'grid')
 			{
 				path = 'grid/' + path;
+			}
+
+			if (throttle.length > 1)
+			{
+				path += throttle;
+			}
+
+			if (threshold.length > 1)
+			{
+				path += threshold;
 			}
 
 			if (path !== '')
@@ -753,7 +829,14 @@
 
 			this.applied_filters.splice(index, 1);
 
-			this.$filters.html(this.tmpl.filters({ filters: this.applied_filters }));
+			if (this.applied_filters.length > 0)
+			{
+				this.$filters.html(this.tmpl.filters({ filters: this.applied_filters }));
+			}
+			else
+			{
+				this.$filters.html(this.tmpl.empty_filters);
+			}
 
 			this.goToPage(1);
 
@@ -1499,6 +1582,36 @@
 		},
 
 		/**
+		 * Extracts threshold from route.
+		 *
+		 * @param  string  threshold
+		 * @return void
+		 */
+		extractThresholdFromRoute: function(threshold)
+		{
+			threshold = threshold.split(this.opt.delimiter);
+
+			threshold = threshold[1];
+
+			this.setThreshold(threshold);
+		},
+
+		/**
+		 * Extracts throttle from route.
+		 *
+		 * @param  string  throttle
+		 * @return void
+		 */
+		extractThrottleFromRoute: function(throttle)
+		{
+			throttle = throttle.split(this.opt.delimiter);
+
+			throttle = throttle[1];
+
+			this.setThrottle(throttle);
+		},
+
+		/**
 		 * Build page fragment.
 		 *
 		 * @return string
@@ -1609,6 +1722,36 @@
 		},
 
 		/**
+		 * Build throttle fragment.
+		 *
+		 * @return string
+		 */
+		buildThrottleFragment: function()
+		{
+			if (defaults.throttle !== this.opt.throttle)
+			{
+				return 'throttle' + this.opt.delimiter + this.opt.throttle + '/';
+			}
+
+			return '/';
+		},
+
+		/**
+		 * Build threshold fragment.
+		 *
+		 * @return string
+		 */
+		buildThresholdFragment: function()
+		{
+			if (defaults.threshold !== this.opt.threshold)
+			{
+				return 'threshold' + this.opt.delimiter + this.opt.threshold + '/';
+			}
+
+			return '/';
+		},
+
+		/**
 		 * Grabs all the results from the server.
 		 *
 		 * @return void
@@ -1628,6 +1771,11 @@
 			})
 			.done(function(response)
 			{
+				if (self.opt.cache_response)
+				{
+					self.response = response;
+				}
+
 				if (self.pagination.page_index > response.pages)
 				{
 					self.pagination.page_index = response.pages;
@@ -1646,7 +1794,7 @@
 					self.$results.empty();
 				}
 
-				if (self.opt.method === 'single' || self.opt.method === 'single')
+				if (self.opt.method === 'single' || self.opt.method === 'group')
 				{
 					self.$results.html(self.tmpl.results(response));
 				}
@@ -1659,7 +1807,12 @@
 
 				if ( ! response.results.length)
 				{
-					self.$results.html(self.tmpl.empty());
+					self.$results.html(self.tmpl.empty_results());
+				}
+
+				if ( ! self.applied_filters.length)
+				{
+					self.$filters.html(self.tmpl.empty_filters());
 				}
 
 				if (response.sort !== '')
@@ -1692,7 +1845,7 @@
 			.error(function(jqXHR, textStatus, errorThrown)
 			{
 
-				console.log('fetchResults' + jqXHR.status, errorThrown);
+				console.error('fetchResults ' + jqXHR.status, errorThrown);
 
 			});
 		},
@@ -1918,7 +2071,14 @@
 			}
 			else
 			{
-				page_limit = this.pagination.page_index === 1 ? per_page > this.pagination.filtered ? this.pagination.filtered : per_page : ( this.pagination.total < (per_page * this.pagination.page_index )) ? this.pagination.filtered : this.pagination.filtered * this.pagination.page_index < this.pagination.filtered ? per_page * this.pagination.page_index : this.pagination.filtered;
+				if (this.pagination.page_index === 1)
+				{
+					page_limit = per_page > this.pagination.filtered ? this.pagination.filtered : per_page;
+				}
+				else
+				{
+					page_limit = this.pagination.total < (per_page * this.pagination.page_index) ? this.pagination.filtered : (per_page * this.pagination.page_index);
+				}
 			}
 
 			params = {
@@ -2097,7 +2257,7 @@
 			this.pagination.page_index = 1;
 
 			// Remove all rendered content
-			this.$filters.empty();
+			this.$filters.html(this.tmpl.empty_filters());
 
 			if (this.opt.method === 'infinite')
 			{
