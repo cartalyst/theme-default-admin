@@ -13,7 +13,8 @@
 		</title>
 		<meta name="description" content="@yield('meta-description')">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<meta name="base_url" content="{{ URL::to('/') }}">
+		<meta name="base_url" content="{{ url('/') }}">
+		<meta name="csrf-token" content="{{ csrf_token() }}">
 
 		{{-- Queue assets --}}
 		{{ Asset::queue('style', 'platform/less/style.less') }}
@@ -68,7 +69,7 @@
 							<span class="icon-bar"></span>
 							<span class="icon-bar"></span>
 						</button>
-						<a class="navbar-brand" href="{{ URL::toAdmin('/') }}">
+						<a class="navbar-brand" href="{{ url()->toAdmin('/') }}">
 							<img class="brand-sm" src="{{ Asset::getUrl('platform/img/brand-sm.png') }}" alt="Cartalyst LLC" />
 							@setting('platform.site.title')
 						</a>
