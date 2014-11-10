@@ -38,7 +38,7 @@
 	],
 	"require": {
 		"php": ">=5.4.0",
-		"cartalyst/composer-installers": "~1.1"
+		"cartalyst/composer-installers": "~1.2",
 	},
 	"extra": {
 		"component": "theme",
