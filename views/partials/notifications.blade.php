@@ -1,3 +1,15 @@
+@if ($message = Session::get('warning'))
+
+	<div class="alert alert-warning alert-block">
+
+		<button type="button" class="close" data-dismiss="alert"><i class="fa fa-minus-square"></i></button>
+
+		<strong>{{{ trans('general.warning') }}}</strong> {{ $message }}
+
+	</div>
+
+@endif
+
 @if ($errors->any())
 
 	<div class="alert alert-danger alert-block">
