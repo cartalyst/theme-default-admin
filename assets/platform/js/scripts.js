@@ -53,4 +53,11 @@ $(function()
 			'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
 		}
 	});
+
+	$('[data-action-delete]').on('click', function(e)
+	{
+		e.preventDefault();
+
+		$(this).parents('form:first').append('<input type="hidden" name="_method" value="delete">').submit();
+	});
 });
