@@ -58,6 +58,13 @@ $(function()
 	{
 		e.preventDefault();
 
-		$(this).parents('form:first').append('<input type="hidden" name="_method" value="delete">').submit();
+		var $form = $(this).parents('form:first');
+
+		if (action = $(this).data('action-delete'))
+		{
+			$form.attr('action', action);
+		}
+
+		$form.append('<input type="hidden" name="_method" value="delete">').submit();
 	});
 });
