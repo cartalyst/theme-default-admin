@@ -1,41 +1,17 @@
-@if ($message = Session::get('warning'))
+@if ( ! empty(Alert::all('form')))
+<div class="alert alert-danger">
+	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
 
-	<div class="alert alert-warning alert-block">
-
-		<button type="button" class="close" data-dismiss="alert"><i class="fa fa-minus-square"></i></button>
-
-		<strong>{{{ trans('general.warning') }}}</strong> {{ $message }}
-
-	</div>
-
+	Check the form below for errors.
+</div>
 @endif
 
-@if ($errors->any())
+@foreach ($alerts = Alert::except(['form']) as $alert)
 
-	<div class="alert alert-danger alert-block">
+	<div class="alert alert-{{ $alert->class }}">
+		<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
 
-		<button type="button" class="close" data-dismiss="alert"><i class="fa fa-minus-square"></i></button>
-
-		<strong>{{{ trans('general.error') }}}</strong>
-
-		@if ($message = $errors->first(0, ':message'))
-			{{ $message }}
-		@else
-			Please check the form below for errors
-		@endif
-
+		{{ $alert->message }}
 	</div>
 
-@endif
-
-@if ($message = Session::get('success'))
-
-	<div class="alert alert-success alert-block">
-
-		<button type="button" class="close" data-dismiss="alert"><i class="fa fa-minus-square"></i></button>
-
-		<strong>{{{ trans('general.success') }}}</strong> {{ $message }}
-
-	</div>
-
-@endif
+@endforeach
