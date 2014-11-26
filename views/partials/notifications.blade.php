@@ -1,4 +1,4 @@
-@if ( ! empty(Alert::all('form')))
+@if (Alert::all('form'))
 <div class="alert alert-danger">
 	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
 
