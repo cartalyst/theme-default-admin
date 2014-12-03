@@ -67,4 +67,14 @@ $(function()
 
 		$form.append('<input type="hidden" name="_method" value="delete">').submit();
 	});
+
+	if ($.fn.redactor)
+	{
+		// Instantiate the editor
+		$('.redactor').redactor({
+			toolbarFixed: true,
+			minHeight: 200,
+		});
+	}
+
 });
