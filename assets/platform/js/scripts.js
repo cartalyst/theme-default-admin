@@ -74,6 +74,8 @@ $(function()
 		$('.redactor').redactor({
 			toolbarFixed: true,
 			minHeight: 200,
+			buttonSource: true,
+
 		});
 	}
 
