@@ -18,23 +18,16 @@
 
 /* Override bootstrap */
 
-@success:        				#5cb85c;
-@info:           				#5bc0de;
-@warning:        				#f0ad4e;
-@danger:         				#a94442;
+$success:        #5cb85c;
+$info:           #5bc0de;
+$warning:        #f0ad4e;
+$danger:         #a94442;
 
 /* Template defaults */
 
-@base:							#ffffff;
-@base-header:					#f7f7f7;
-
-@sidebar: 						#262b30;
-@sidebar-border-light: 			darken(@sidebar, 45%);
-@sidebar-border-light: 			lighten(@sidebar, 15%);
-
-@page: 							#f7f7f7;
-@page-border-light: 			darken(@sidebar, 45%);
-@page-border-light: 			lighten(@sidebar, 15%);
+$bg-base				#ffffff;
+$bg-sidebar: 			#262b30;
+$bg-page: 				#f7f7f7;
 
 
 *, *:before, *:after {
