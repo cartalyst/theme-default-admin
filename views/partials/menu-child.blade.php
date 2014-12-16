@@ -1,15 +1,15 @@
-<li class="sidebar-nav-item {{ $child->isActive ? 'active' : null }}">
+<li class="item {{ $child->isActive ? 'item--active' : null }}">
 	<a target="{{ $child->target }}" href="{{ $child->uri }}" role="button">
-		<i class="sidebar-nav-item-icon {{ $child->class }}"></i>
+		<i class="{{ $child->class }}"></i>
 		<span>{{ $child->name }}</span>
 		@if ($child->children and ! $child->hasSubItems)
-		<b class="caret"></b>
+		<i class="fa fa-caret-down"></i>
 		@endif
 	</a>
 
 	@if ($child->children)
 		<ul class="collapse" role="menu" aria-labelledby="drop-{{ $child->slug }}">
-		@each('partials/sidebar/child', $child->children, 'child')
+		@each('partials/menu-child', $child->children, 'child')
 		</ul>
 	@endif
 </li>
