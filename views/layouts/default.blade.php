@@ -104,14 +104,12 @@
 
 					<a class="toggle"><i class="fa fa-bars"></i></a>
 
-				<!-- alerts -->
-				<div class="alerts">
-					@include('partials/alerts')
-				</div>
-
 				</header>
 
-
+				<!-- alerts -->
+				<div class="alerts container-fluid">
+					@include('partials/alerts')
+				</div>
 
 				<!-- Page Content-->
 				<div class="page__content container-fluid">

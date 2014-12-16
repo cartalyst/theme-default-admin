@@ -82,12 +82,13 @@ body {
 		height: auto;
 
 		> header {
-			height:50px;
+			min-height:50px;
 		}
 
 		.toggle {
 			display:none;
 		}
+
 	}
 
 	&.base--collapse {
