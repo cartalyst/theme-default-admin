@@ -19,7 +19,7 @@
 $(function()
 {
 	// Activate tooltips
-	$('.tip, .tooltip, [data-tooltip], [data-toggle="tooltip"]').tooltip();
+	$('.tip, .tooltip, [data-tooltip], [data-toggle="tooltip"]').tooltip({container: 'body'});
 
 	// Activate popovers
 	$('.popover, [data-popover], [data-toggle="popover"]').popover({

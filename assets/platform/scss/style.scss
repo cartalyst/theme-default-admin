@@ -372,58 +372,107 @@ body {
 	margin-bottom: 0;
 }
 
+// .loading {
+// 	background-color: rgba(0,0,0,0);
+// 	opacity: .8;
+// 	border-radius: 50px;
+// 	margin:0 auto;
+// 	animation: spinner 1s infinite linear;
+// 	-moz-animation: spinner 1s infinite linear;
+// 	-webkit-animation: spinner 1s infinite linear;
+// 	border: 4px solid #fff;
+// 	border-top: 5px solid rgba(0,0,0,1);
+// 	border-left: 5px solid rgba(0,0,0,1);
+// 	width: 20px;
+// 	height: 20px;
+// }
+
+// @keyframes spinner {
+// 	0% {
+// 		-moz-transform: rotate(0deg);
+// 	}
+
+// 	100% {
+// 		-moz-transform: rotate(360deg);
+// 	};
+// }
+
+// @-moz-keyframes spinner {
+// 	0% {
+// 		-moz-transform: rotate(0deg);
+// 	}
+
+// 	100% {
+// 		-moz-transform: rotate(360deg);
+// 	};
+// }
+
+// @-webkit-keyframes spinner {
+// 	0% {
+// 		-webkit-transform: rotate(0deg);
+// 	}
+
+// 	100% {
+// 		-webkit-transform: rotate(360deg);
+// 	};
+// }
+
+
+/* Effect 11: Big counter */
+
 .loading {
-	background-color: rgba(0,0,0,0);
-	opacity: .8;
-	border-radius: 50px;
-	margin:0 auto;
-	animation: spinner 1s infinite linear;
-	-moz-animation: spinner 1s infinite linear;
-	-webkit-animation: spinner 1s infinite linear;
-	border: 4px solid #fff;
-	border-top: 5px solid rgba(0,0,0,1);
-	border-left: 5px solid rgba(0,0,0,1);
-	width: 20px;
-	height: 20px;
+	position: fixed;
+	right: 20px;
+	z-index: -1;
+	display: inline-block;
+	visibility: hidden;
+	overflow: hidden;
+	height: 1em;
+	text-align: right;
+	font-weight: 300;
+	font-size: 10em;
+	line-height: 1em;
+	pointer-events: none;
 }
 
-@keyframes spinner {
-	0% {
-		-moz-transform: rotate(0deg);
-	}
-
-	100% {
-		-moz-transform: rotate(360deg);
-	};
+.loading.la-animate {
+	visibility: visible;
 }
 
-@-moz-keyframes spinner {
-	0% {
-		-moz-transform: rotate(0deg);
-	}
-
-	100% {
-		-moz-transform: rotate(360deg);
-	};
+.loading::after {
+	position: relative;
+	width: 100%;
+	color: rgba(0,0,0,0.1);
+	content: "0%\A 10%\A 22%\A 36%\A 48%\A 53%\A 64%\A 71%\A 83%\A 100%\A";
+	white-space: pre;
 }
 
-@-webkit-keyframes spinner {
-	0% {
-		-webkit-transform: rotate(0deg);
-	}
+.loading.la-animate::after {
+	-webkit-animation: counter 6s steps(10);
+	animation: counter 6s steps(10);
+}
 
-	100% {
-		-webkit-transform: rotate(360deg);
-	};
+@keyframes counter {
+	0% { top: 0; }
+	100% { top: -10em; opacity: 0;}
+}
+@-webkit-keyframes counter {
+	0% { top: 0; }
+	100% { top: -10em; opacity: 0;}
 }
 
 .pagination-sm {
 	margin-top: 0;
 }
 
+.data-grid-search {
+	margin-right:5px;
+}
+
 [data-toggle="popover"], [data-toggle="tooltip"] {
 	cursor: pointer;
 }
+
 
 label .popover-content {
 	font-weight: normal;

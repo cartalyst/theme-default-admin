@@ -64,38 +64,7 @@
 		<section class="base">
 
 			<!-- Sidebar -->
-			<aside class="sidebar">
-
-				<div class="sidebar__brand">
-
-					<figure>
-						<a href="{{ url()->toAdmin('/') }}">
-							<img src="{{ Asset::getUrl('platform/img/ornery-octopus.svg') }}" alt="Profile Image">
-							<figcaption>@setting('platform.site.title')<span>@setting('platform/foundation::release_name')</span></figcaption>
-						</a>
-					</figure>
-
-				</div>
-
-				<nav class="navigation navigation--header">
-
-					@widget('platform/menus::nav.show', array('system', 0, 'nav nav-pills', admin_uri()))
-
-				</nav>
-
-				<nav class="navigation navigation--sidebar">
-
-					@widget('platform/menus::nav.show', array('admin', 0, 'menu', admin_uri(), 'partials/menu'))
-
-				</nav>
-
-				<div class="sidebar__copyright">
-
-					@content('company-copyright')
-
-				</div>
-
-			</aside>
+			@include('partials/sidebar')
 
 			<!-- Page -->
 			<main class="page">
