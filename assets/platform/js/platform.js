@@ -35,6 +35,15 @@ var Platform;
 	Platform.Urls.base = $('meta[name="base_url"]').attr('content');
 
 	/**
+	 * Ajax Setup
+	 */
+	$.ajaxSetup({
+		headers: {
+			'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+		}
+	});
+
+	/**
 	 * Cache Our Common Selectors
 	 */
 	Platform.Cache.$win   = $(window);
@@ -47,7 +56,13 @@ var Platform;
 	Platform.Main.init = function()
 	{
 		Platform.Main.addListeners();
+		Platform.Main.tooltips();
+		Platform.Main.popovers();
 		Platform.Main.parsley();
+		if ($.fn.redactor)
+		{
+			Platform.Main.redactor();
+		}
 	};
 
 	/**
@@ -55,13 +70,15 @@ var Platform;
 	 */
 	Platform.Main.addListeners = function()
 	{
-		Platform.Cache.$alert.on('click', '.close', Platform.Main.closeAlert);
+		Platform.Cache.$alert.on('click', '.close', Platform.Main.handleAlerts);
+		Platform.Cache.$body.on('click', '[data-modal], [data-toggle="modal"]', Platform.Main.handleModals);
+		Platform.Cache.$body.on('click', '[data-action-delete]', Platform.Main.handleDeletes);
 	};
 
 	/**
-	 * Close Alerts
+	 * Handle Alerts
 	 */
-	Platform.Main.closeAlert = function(event)
+	Platform.Main.handleAlerts = function(event)
 	{
 		$(event.delegateTarget).slideToggle(function()
 		{
@@ -70,7 +87,81 @@ var Platform;
 	};
 
 	/**
-	 * Parsley form validation settings.
+	 * Handle Bootstrap Modals
+	 */
+	Platform.Main.handleModals = function (event)
+	{
+		event.preventDefault();
+
+		// Get the modal target
+		var target = $(this).data('target');
+
+		// Is this modal target a confirmation?
+		if (target === 'modal-confirm')
+		{
+			$('#modal-confirm .confirm').attr('href', $(this).attr('href'));
+
+			$('#modal-confirm').modal({
+				show: true,
+				remote: false
+			});
+
+			return false;
+		}
+	}
+
+	/**
+	 * Initialize Bootstrap Modals
+	 */
+	Platform.Main.handleDeletes = function (event)
+	{
+
+		event.preventDefault();
+
+		var $form = $(this).parents('form:first');
+
+		if (action = $(this).data('action-delete'))
+		{
+			$form.attr('action', action);
+		}
+
+		$form.append('<input type="hidden" name="_method" value="delete">').submit();
+
+	}
+
+	/**
+	 * Initialize Bootstrap Tooltips
+	 */
+	Platform.Main.tooltips = function ()
+	{
+		$('.tip, .tooltip, [data-tooltip], [data-toggle="tooltip"]').tooltip({container: 'body'});
+	}
+
+	/**
+	 * Initialize Bootstrap Popovers
+	 */
+	Platform.Main.popovers = function ()
+	{
+		$('.popover, [data-popover], [data-toggle="popover"]').popover({
+			trigger : 'hover'
+		});
+	}
+
+	/**
+	 * Initialize Redactor
+	 */
+	Platform.Main.redcator = function ()
+	{
+
+		$('.redactor').redactor({
+			toolbarFixed: true,
+			minHeight: 200,
+			buttonSource: true,
+		});
+	}
+
+	/**
+	 * Initialize Parsley Validation
 	 */
 	Platform.Main.parsley = function()
 	{

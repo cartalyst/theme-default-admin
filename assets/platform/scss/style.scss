@@ -17,11 +17,11 @@
  */
 
 /* Template defaults */
-$body:							#ffffff;
+$body:							#f7f7f7;
 $body-header:					#ffffff;
 $body-footer:					#ffffff;
 
-$base:							#ffffff;
+$base:							#f7f7f7;
 
 $sidebar: 						#f7f7f7;
 $sidebar-dark: 					darken($sidebar, 10%);
@@ -40,8 +40,6 @@ $success:        				#5cb85c;
 $info:           				#5bc0de;
 $warning:        				#f0ad4e;
 $danger:         				#a94442;
-
-
 
 /* Layout */
 *, *:before, *:after {
@@ -78,8 +76,10 @@ body {
 	.page {
 		padding-left: 0;
 		margin-left: 0;
-		width: 100%;
-		height: auto;
+		background:$page;
+		height: 100%;
+		margin-right:16px;
+		border-right:1px solid $sidebar-dark;
 
 		> header {
 			min-height:50px;

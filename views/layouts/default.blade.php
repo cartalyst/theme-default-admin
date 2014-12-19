@@ -26,14 +26,14 @@
 	{{ Asset::queue('style', 'platform/scss/style.scss') }}
 
 	{{ Asset::queue('modernizr', 'modernizr/js/modernizr.js') }}
-	{{ Asset::queue('jquery', 'jquery/js/jquery.js') }}
+	{{ Asset::queue('jquery', 'jquery/js/jquery.js', 'modernizr') }}
 	{{ Asset::queue('bootstrap', 'bootstrap/js/bootstrap.min.js', 'jquery') }}
-	{{ Asset::queue('perfect-scrollbar', 'perfect-scrollbar/js/perferct-scrollbar.min.js') }}
+	{{ Asset::queue('perfect-scrollbar', 'perfect-scrollbar/js/perferct-scrollbar.min.js', 'jquery') }}
+	{{ Asset::queue('metisMenu', 'onokumus/js/metisMenu.min.js', 'jquery') }}
 
 	{{ Asset::queue('platform', 'platform/js/platform.js', 'jquery') }}
-	{{ Asset::queue('scripts', 'platform/js/scripts.js', 'jquery') }}
 
-	{{ Asset::queue('metisMenu', 'onokumus/js/metisMenu.min.js', 'bootstrap') }}
+
 
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 		<!--[if lt IE 9]>
@@ -59,7 +59,6 @@
 		<!--[if lt IE 7]>
 		<p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
 		<![endif]-->
-
 
 		<section class="base">
 
