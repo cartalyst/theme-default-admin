@@ -13,7 +13,7 @@
 
 	<nav class="navigation navigation--header">
 
-		@widget('platform/menus::nav.show', array('system', 0, 'nav nav-pills', admin_uri()))
+		@widget('platform/menus::nav.show', array('system', 0, 'nav nav-pills'))
 
 	</nav>
 
