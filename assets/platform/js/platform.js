@@ -150,7 +150,7 @@ var Platform;
 	/**
 	 * Initialize Redactor
 	 */
-	Platform.Main.redcator = function ()
+	Platform.Main.redactor = function ()
 	{
 
 		$('.redactor').redactor({
