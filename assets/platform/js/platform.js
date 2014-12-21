@@ -25,7 +25,7 @@ var Platform;
 
 	Platform = Platform || {
 		Urls: {},
-		Main: {},
+		App: {},
 		Cache: {}
 	};
 
@@ -53,32 +53,32 @@ var Platform;
 	/**
 	 * Initialize functions
 	 */
-	Platform.Main.init = function()
+	Platform.App.init = function()
 	{
-		Platform.Main.addListeners();
-		Platform.Main.tooltips();
-		Platform.Main.popovers();
-		Platform.Main.parsley();
+		Platform.App.addListeners();
+		Platform.App.tooltips();
+		Platform.App.popovers();
+		Platform.App.parsley();
 		if ($.fn.redactor)
 		{
-			Platform.Main.redactor();
+			Platform.App.redactor();
 		}
 	};
 
 	/**
 	 * Add Event Listeners
 	 */
-	Platform.Main.addListeners = function()
+	Platform.App.addListeners = function()
 	{
-		Platform.Cache.$alert.on('click', '.close', Platform.Main.handleAlerts);
-		Platform.Cache.$body.on('click', '[data-modal], [data-toggle="modal"]', Platform.Main.handleModals);
-		Platform.Cache.$body.on('click', '[data-action-delete]', Platform.Main.handleDeletes);
+		Platform.Cache.$alert.on('click', '.close', Platform.App.handleAlerts);
+		Platform.Cache.$body.on('click', '[data-modal], [data-toggle="modal"]', Platform.App.handleModals);
+		Platform.Cache.$body.on('click', '[data-action-delete]', Platform.App.handleDeletes);
 	};
 
 	/**
 	 * Handle Alerts
 	 */
-	Platform.Main.handleAlerts = function(event)
+	Platform.App.handleAlerts = function(event)
 	{
 		$(event.delegateTarget).slideToggle(function()
 		{
@@ -89,7 +89,7 @@ var Platform;
 	/**
 	 * Handle Bootstrap Modals
 	 */
-	Platform.Main.handleModals = function (event)
+	Platform.App.handleModals = function (event)
 	{
 		event.preventDefault();
 
@@ -113,7 +113,7 @@ var Platform;
 	/**
 	 * Initialize Bootstrap Modals
 	 */
-	Platform.Main.handleDeletes = function (event)
+	Platform.App.handleDeletes = function (event)
 	{
 
 		event.preventDefault();
@@ -132,7 +132,7 @@ var Platform;
 	/**
 	 * Initialize Bootstrap Tooltips
 	 */
-	Platform.Main.tooltips = function ()
+	Platform.App.tooltips = function ()
 	{
 		$('.tip, .tooltip, [data-tooltip], [data-toggle="tooltip"]').tooltip({container: 'body'});
 	}
@@ -140,7 +140,7 @@ var Platform;
 	/**
 	 * Initialize Bootstrap Popovers
 	 */
-	Platform.Main.popovers = function ()
+	Platform.App.popovers = function ()
 	{
 		$('.popover, [data-popover], [data-toggle="popover"]').popover({
 			trigger : 'hover'
@@ -150,7 +150,7 @@ var Platform;
 	/**
 	 * Initialize Redactor
 	 */
-	Platform.Main.redactor = function ()
+	Platform.App.redactor = function ()
 	{
 
 		$('.redactor').redactor({
@@ -163,7 +163,7 @@ var Platform;
 	/**
 	 * Initialize Parsley Validation
 	 */
-	Platform.Main.parsley = function()
+	Platform.App.parsley = function()
 	{
 		window.ParsleyConfig =
 		{
@@ -201,6 +201,6 @@ var Platform;
 	/**
 	 * Job done, lets run.
 	 */
-	Platform.Main.init();
+	Platform.App.init();
 
 })(window, document, jQuery);
