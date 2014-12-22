@@ -9,7 +9,7 @@
 
 	@if ($child->children)
 		<ul class="collapse" role="menu" aria-labelledby="drop-{{ $child->slug }}">
-		@each('partials/menu-child', $child->children, 'child')
+		@each('partials/navigation/sidebar-child', $child->children, 'child')
 		</ul>
 	@endif
 </li>

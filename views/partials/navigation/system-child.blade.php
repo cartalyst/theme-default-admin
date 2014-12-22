@@ -8,7 +8,7 @@
 
 	@if ($child->children)
 		<ul class="dropdown-menu" role="menu" aria-labelledby="drop-{{ $child->slug }}">
-		@each('nav/system/child', $child->children, 'child')
+		@each('partials/navigation/system-child', $children, 'child')
 		</ul>
 	@endif
 </li>

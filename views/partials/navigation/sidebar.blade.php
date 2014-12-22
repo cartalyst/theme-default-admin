@@ -1,3 +1,3 @@
 <ul class="{{ $cssClass }}" data-sidebar-navigation role="navigation">
-	@each('partials/menu-child', $children, 'child')
+	@each('partials/navigation/sidebar-child', $children, 'child')
 </ul>

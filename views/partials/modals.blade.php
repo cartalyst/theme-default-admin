@@ -1,1 +1,1 @@
-@include('partials/modal-confirm')
+@include('partials/modals/modal-confirm')
