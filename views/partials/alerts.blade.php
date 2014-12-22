@@ -1,19 +1,23 @@
 @if (Alert::all('form'))
-<div class="alert alert-danger">
 
-		<button type="button" class="alert-close" data-dismiss="alert" aria-hidden="true">&times;</button>
-
-		Check the form below for errors.
-
+<div class="alert-box alert-bar alert-effect-slidetop alert-type-danger alert-show">
+	<div class="alert-box-inner">
+	<span class="icon"><i class="fa fa-danger"></i></span>
+		<p>Check the form below for errors.</p>
+	</div>
+	<span class="alert-close"><i class="fa fa-times-circle-o"></i></span>
 </div>
+
 @endif
 
 @foreach ($alerts = Alert::except('form') as $alert)
-<div class="alert alert-{{ $alert->class }}">
 
-		<button type="button" class="alert" data-dismiss="alert" aria-hidden="true">&times;</button>
-
-		{{ $alert->message }}
-
+<div class="alert-box alert-bar alert-effect-slidetop alert-type-{{ $alert->class }} alert-show">
+	<div class="alert-box-inner">
+	<span class="icon"><i class="fa fa-info"></i></span>
+		<p>{{ $alert->message }}</p>
+	</div>
+	<span class="alert-close"><i class="fa fa-times-circle-o"></i></span>
 </div>
+
 @endforeach

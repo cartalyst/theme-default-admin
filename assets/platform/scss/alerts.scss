@@ -1,0 +1,251 @@
+/* Common, default styles for the notification box */
+
+.alert-box {
+	background: rgba(42,45,50,0.95);
+	max-height:64px;
+	padding:16px 0;
+	z-index: 10000;
+	pointer-events: none;
+	color: rgba(250,251,255,0.95);
+	font-size: 90%;
+	font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Arial, saalert-serif;
+}
+
+.alert-box.alert-show {
+	pointer-events: auto;
+}
+
+.alert-box a {
+	color: inherit;
+	opacity: 0.7;
+	font-weight: 700;
+}
+
+.alert-box a:hover,
+.alert-box a:focus {
+	opacity: 1;
+}
+
+.alert-box p {
+	margin: 0;
+}
+
+.alert-box.alert-show,
+.alert-box.alert-visible {
+	pointer-events: auto;
+}
+
+.alert-close {
+	position: absolute;
+	right: 4px;
+	top: 4px;
+	overflow: hidden;
+	cursor: pointer;
+	-webkit-backface-visibility: hidden;
+	backface-visibility: hidden;
+	font-size:20px;
+}
+
+/* To bar notifications */
+.alert-box.alert-bar {
+	top: 0;
+	left: 0;
+}
+
+.alert-bar .alert-close {
+	background: transparent;
+	top: 50%;
+	right: 20px;
+	-webkit-transform: translateY(-50%);
+	transform: translateY(-50%);
+}
+
+.alert-bar .alert-close::before,
+.alert-bar .alert-close::after {
+	background: #b7b5b3;
+}
+
+[class^="alert-effect-"].alert-bar.alert-hide,
+[class*=" alert-effect-"].alert-bar.alert-hide {
+	-webkit-animation-direction: reverse;
+	animation-direction: reverse;
+}
+
+/* Individual Effects */
+
+/* Slide on top */
+.alert-effect-slidetop {
+	box-shadow: inset 64px 0 rgba(0,0,0,0.6);
+}
+
+.alert-effect-slidetop .icon {
+	position: absolute;
+	top:26px;
+	width:64px;
+	text-align: center;
+	font-size:26px;
+	-webkit-transform: translate3d(0,-50%,0);
+	transform: translate3d(0,-50%,0);
+}
+
+.alert-effect-slidetop p {
+	padding-left:72px;
+	font-size: 1.2em;
+	display: inline-block;
+}
+
+.alert-effect-slidetop .alert-close::before,
+.alert-effect-slidetop .alert-close::after {
+	width: 2px;
+	background: #14151b;
+}
+
+.alert-effect-slidetop .alert-close:hover::before,
+.alert-effect-slidetop .alert-close:hover::after {
+	background: #fff;
+}
+
+.alert-effect-slidetop.alert-show .icon,
+.alert-effect-slidetop.alert-show p {
+	-webkit-animation-name: animScaleUp;
+	animation-name: animScaleUp;
+	-webkit-animation-duration: 0.3s;
+	animation-duration: 0.3s;
+	-webkit-animation-delay: 0.2s;
+	animation-delay: 0.2s;
+	-webkit-animation-fill-mode: both;
+	animation-fill-mode: both;
+}
+
+.alert-effect-slidetop.alert-show p {
+	-webkit-animation-name: animFade;
+	animation-name: animFade;
+}
+
+@-webkit-keyframes animScaleUp {
+	0% { opacity: 0; -webkit-transform: translate3d(0,-50%,0) scale3d(0,0,1); }
+	100% { opacity: 1; -webkit-transform: translate3d(0,-50%,0) scale3d(1,1,1); }
+}
+
+@keyframes animScaleUp {
+	0% { opacity: 0; -webkit-transform: translate3d(0,-50%,0) scale3d(0,0,1); transform: translate3d(0,-50%,0) scale3d(0,0,1); }
+	100% { opacity: 1; -webkit-transform: translate3d(0,-50%,0) scale3d(1,1,1); transform: translate3d(0,-50%,0) scale3d(1,1,1); }
+}
+
+.alert-effect-slidetop.alert-show,
+.alert-effect-slidetop.alert-hide {
+	-webkit-animation-name: animSlideTop;
+	animation-name: animSlideTop;
+	-webkit-animation-duration: 0.3s;
+	animation-duration: 0.3s;
+}
+
+@-webkit-keyframes animSlideTop {
+	0% { -webkit-transform: translate3d(0,-100%,0); }
+	100% { -webkit-transform: translate3d(0,0,0); }
+}
+
+@keyframes animSlideTop {
+	0% { -webkit-transform: translate3d(0,-100%,0); transform: translate3d(0,-100%,0); }
+	100% { -webkit-transform: translate3d(0,0,0); transform: translate3d(0,0,0); }
+}
+
+/* Expanding Loader */
+.alert-effect-exploader {
+	background: #fff;
+	color: #7a7264;
+	-webkit-transform-origin: 0 0;
+	transform-origin: 0 0;
+}
+
+.alert-effect-exploader .icon {
+
+	-webkit-transform: translate3d(0,-50%,0);
+	transform: translate3d(0,-50%,0);
+}
+
+.alert-effect-exploader .alert-box-inner {
+	position: relative;
+}
+
+.alert-effect-exploader p {
+	padding: 0.25em 2em 0.25em 3em;
+}
+
+.alert-effect-exploader .alert-close:hover::before,
+.alert-effect-exploader .alert-close:hover::after {
+	background: #98815a;
+}
+
+.alert-effect-exploader.alert-show {
+	-webkit-animation-name: animLoad;
+	animation-name: animLoad;
+	-webkit-animation-duration: 2.5s;
+	animation-duration: 2.5s;
+}
+
+@-webkit-keyframes animLoad {
+	0% { opacity: 1; -webkit-transform: scale3d(0,0.3,1); }
+	33% { opacity: 1; -webkit-transform: scale3d(0.5,0.3,1); }
+	50% { opacity: 1; -webkit-transform: scale3d(0.6,0.3,1); }
+	80%, 85% { opacity: 1; -webkit-transform: scale3d(1,0.3,1); -webkit-animation-timing-function: cubic-bezier(0.7,0,0.3,1); }
+	100% { opacity: 1; -webkit-transform: scale3d(1,1,1); }
+}
+
+@keyframes animLoad {
+	0% { opacity: 1; -webkit-transform: scale3d(0,0.3,1); transform: scale3d(0,0.3,1); }
+	33% { opacity: 1; -webkit-transform: scale3d(0.5,0.3,1); transform: scale3d(0.5,0.3,1); }
+	50% { opacity: 1; -webkit-transform: scale3d(0.6,0.3,1); transform: scale3d(0.6,0.3,1); }
+	80%, 85% { opacity: 1; -webkit-transform: scale3d(1,0.3,1); transform: scale3d(1,0.3,1); -webkit-animation-timing-function: cubic-bezier(0.7,0,0.3,1); animation-timing-function: cubic-bezier(0.7,0,0.3,1); }
+	100% { opacity: 1; -webkit-transform: scale3d(1,1,1); transform: scale3d(1,1,1); }
+}
+
+.alert-effect-exploader.alert-hide {
+	-webkit-animation-name: animFade;
+	animation-name: animFade;
+	-webkit-animation-duration: 0.3s;
+	animation-duration: 0.3s;
+}
+
+.alert-effect-exploader.alert-show .alert-box-inner,
+.alert-effect-exploader.alert-show .alert-close {
+	-webkit-animation-fill-mode: both;
+	animation-fill-mode: both;
+	-webkit-animation-duration: 0.3s;
+	animation-duration: 0.3s;
+	-webkit-animation-delay: 2.4s;
+	animation-delay: 2.4s;
+}
+
+.alert-effect-exploader.alert-show .alert-close {
+	-webkit-animation-name: animFade;
+	animation-name: animFade;
+}
+
+.alert-effect-exploader.alert-show .alert-box-inner {
+	-webkit-animation-name: animFadeMove;
+	animation-name: animFadeMove;
+	-webkit-animation-timing-function: ease-out;
+	animation-timing-function: ease-out;
+}
+
+@-webkit-keyframes animFadeMove {
+	0% { opacity: 0; -webkit-transform: translate3d(0,10px,0); }
+	100% { opacity: 1; -webkit-transform: translate3d(0,0,0); }
+}
+
+@keyframes animFadeMove {
+	0% { opacity: 0; -webkit-transform: translate3d(0,10px,0); transform: translate3d(0,10px,0); }
+	100% { opacity: 1; -webkit-transform: translate3d(0,0,0); transform: translate3d(0,0,0); }
+}
+
+@-webkit-keyframes animFade {
+	0% { opacity: 0; }
+	100% { opacity: 1; }
+}
+
+@keyframes animFade {
+	0% { opacity: 0; }
+	100% { opacity: 1; }
+}
+

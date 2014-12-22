@@ -89,7 +89,17 @@ body {
 		border-right:1px solid $sidebar-dark;
 
 		> header {
-			min-height:48px;
+			min-height:64px;
+		}
+
+		.alert-box {
+			position: absolute;
+			left:240px;
+			right:16px;
+		}
+
+		.page__content {
+			 position: relative;
 		}
 
 	}

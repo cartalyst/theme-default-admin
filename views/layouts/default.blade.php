@@ -23,6 +23,7 @@
 	{{ Asset::queue('font-awesome', 'font-awesome/css/font-awesome.min.css') }}
 	{{ Asset::queue('metisMenu', 'onokumus/css/metisMenu.min.css') }}
 	{{ Asset::queue('perfect-scrollbar', 'perfect-scrollbar/css/perfect-scrollbar.css') }}
+	{{ Asset::queue('alerts', 'platform/scss/alerts.scss') }}
 	{{ Asset::queue('style', 'platform/scss/style.scss') }}
 
 	{{ Asset::queue('modernizr', 'modernizr/js/modernizr.js') }}
@@ -68,14 +69,13 @@
 			<!-- Page -->
 			<main class="page">
 
+				<!-- Alerts -->
+				@include('partials/alerts')
+
+				<!-- Page Header -->
 				<header class="page__header container-fluid">
 					@include('partials/header')
 				</header>
-
-				<!-- alerts -->
-				<div class="alerts container-fluid">
-					@include('partials/alerts')
-				</div>
 
 				<!-- Page Content-->
 				<div class="page__content container-fluid">
