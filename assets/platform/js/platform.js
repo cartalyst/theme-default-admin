@@ -63,7 +63,7 @@ var Platform;
 
 		if ($.fn.redactor)
 		{
-			Platform.App.initRedactor();
+			Platform.App.redactor();
 		}
 
 		Platform.App.listen();
