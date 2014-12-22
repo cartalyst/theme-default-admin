@@ -224,12 +224,12 @@ var Platform;
 			{
 				$.listen('parsley:field:success', function(Field)
 				{
-					Field.$element.siblings('.help-block').show();
+					Field.$element.closest('.form-group').find('.help-block').show();
 				});
 
 				$.listen('parsley:field:error', function(Field)
 				{
-					Field.$element.siblings('.help-block').hide();
+					Field.$element.closest('.form-group').find('.help-block').hide();
 				});
 			});
 		}
