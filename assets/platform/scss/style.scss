@@ -82,11 +82,7 @@ body {
 		border-right:1px solid $sidebar-dark;
 
 		> header {
-			min-height:50px;
-		}
-
-		.toggle {
-			display:none;
+			min-height:48px;
 		}
 
 	}
@@ -111,11 +107,11 @@ body {
 
 	&.navigation--header {
 
-		border-bottom:1px solid $sidebar-dark;
-		text-align: center;
+		max-height: 80px;
+		padding:8px 0 16px 0;
 
 		ul {
-			padding: 0;
+			padding:0;
 			list-style: none;
 			display: inline-block;
 		}
@@ -123,9 +119,16 @@ body {
 		ul li span {
 			display: none;
 		}
+
+		.fa {
+			font-size:18px;
+		}
+
 	}
 
 	&.navigation--sidebar {
+
+		border-top:1px solid $sidebar-dark;
 
 		ul {
 			padding: 0;
@@ -266,12 +269,12 @@ body {
 /* tablet */
  @media only screen and (max-width: 45em) {
 
- 	.page .page__header .toggle {
- 		display: inline-block;
- 		text-align: left;
-		font-size:28px;
-		padding:8px;
- 	}
+ 	// .page .page__header .toggle {
+ 	// 	display: inline-block;
+ 	// 	text-align: left;
+		// font-size:28px;
+		// padding:8px;
+ 	// }
 
  	// 	.base {
 	// 	padding-left:0;

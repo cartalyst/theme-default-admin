@@ -11,12 +11,6 @@
 
 	</div>
 
-	<nav class="navigation navigation--header">
-
-		@widget('platform/menus::nav.show', array('system', 0, 'nav nav-pills'))
-
-	</nav>
-
 	<nav class="navigation navigation--sidebar">
 
 		@widget('platform/menus::nav.show', array('admin', 0, 'menu', admin_uri(), 'partials/menu'))

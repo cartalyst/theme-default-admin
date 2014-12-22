@@ -69,9 +69,7 @@
 			<main class="page">
 
 				<header class="page__header container-fluid">
-
-					<a class="toggle"><i class="fa fa-bars"></i></a>
-
+					@include('partials/header')
 				</header>
 
 				<!-- alerts -->
@@ -101,13 +99,14 @@
 		@show
 
 		<script>
+
 			$(document).ready(function() {
 				$('.menu').metisMenu({});
 			});
 
-			 $(document).ready(function ($) {
-		        $('.sidebar').perfectScrollbar();
-		      });
+			$(document).ready(function ($) {
+				$('.sidebar').perfectScrollbar();
+			});
 
 			$(".toggle").click(function(e) {
 				e.preventDefault();
