@@ -8,7 +8,7 @@
 
 				<li>
 
-					<a class="toggle" data-tooltip="" data-placement="right" data-title="Sidebar" data-original-title="" title="">
+					<a class="toggle-sidebar" data-tooltip="" data-placement="right" data-title="Sidebar" data-original-title="" title="">
 						<i class="fa fa-bars"></i>
 					</a>
 

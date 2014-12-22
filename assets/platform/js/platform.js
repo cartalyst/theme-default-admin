@@ -29,68 +29,65 @@ var Platform;
 		Cache: {}
 	};
 
-	/**
-	 * Platform URLS
-	 */
+	// Platform Base URL
 	Platform.Urls.base = $('meta[name="base_url"]').attr('content');
 
-	/**
-	 * Ajax Setup
-	 */
+	// CSRF on AJAX requests
 	$.ajaxSetup({
 		headers: {
 			'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
 		}
 	});
 
-	/**
-	 * Cache Our Common Selectors
-	 */
+	// Cache common selectors
 	Platform.Cache.$win   = $(window);
 	Platform.Cache.$body  = $(document.body);
-	Platform.Cache.$alert = $('.alert');
+	Platform.Cache.$alert = $('[data-alert]');
 
-	/**
-	 * Initialize functions
-	 */
+	// Initialize functions
 	Platform.App.init = function()
 	{
-		Platform.App.addListeners();
-		Platform.App.tooltips();
-		Platform.App.popovers();
-		Platform.App.parsley();
+
+		Platform.App.initMenu();
+		Platform.App.initSidebar();
+		Platform.App.initValidation();
+		Platform.App.initTooltips();
+		Platform.App.initPopovers();
+
 		if ($.fn.redactor)
 		{
-			Platform.App.redactor();
+			Platform.App.initRedactor();
 		}
+
+		Platform.App.listen();
 	};
 
-	/**
-	 * Add Event Listeners
-	 */
-	Platform.App.addListeners = function()
+	// Add Listeners
+	Platform.App.listen = function()
 	{
-		Platform.Cache.$alert.on('click', '.close', Platform.App.handleAlerts);
+
+		Platform.Cache.$alert.on('click', '.alert-close', Platform.App.handleAlerts);
+		Platform.Cache.$body.on('click', '.toggle-sidebar', Platform.App.handleSidebarToggle);
 		Platform.Cache.$body.on('click', '[data-modal], [data-toggle="modal"]', Platform.App.handleModals);
 		Platform.Cache.$body.on('click', '[data-action-delete]', Platform.App.handleDeletes);
+
 	};
 
-	/**
-	 * Handle Alerts
-	 */
+	// Handle Alerts
 	Platform.App.handleAlerts = function(event)
 	{
+
 		$(event.delegateTarget).slideToggle(function()
 		{
 			$(this).remove();
 		});
+
 	};
 
-	/**
-	 * Handle Bootstrap Modals
-	 */
+	// Handle Bootstrap Modals
 	Platform.App.handleModals = function (event)
 	{
+
 		event.preventDefault();
 
 		// Get the modal target
@@ -108,11 +105,10 @@ var Platform;
 
 			return false;
 		}
+
 	}
 
-	/**
-	 * Initialize Bootstrap Modals
-	 */
+	// Handle deletes: show confirmation modal.
 	Platform.App.handleDeletes = function (event)
 	{
 
@@ -129,28 +125,52 @@ var Platform;
 
 	}
 
-	/**
-	 * Initialize Bootstrap Tooltips
-	 */
-	Platform.App.tooltips = function ()
+	// Handle sidebar toggle
+	Platform.App.handleSidebarToggle = function (event)
 	{
-		$('.tip, .tooltip, [data-tooltip], [data-toggle="tooltip"]').tooltip({container: 'body'});
+
+		event.preventDefault();
+
+		$(".base").toggleClass("base--collapse");
+
 	}
 
-	/**
-	 * Initialize Bootstrap Popovers
-	 */
-	Platform.App.popovers = function ()
+	// Initialize Menu: https://github.com/onokumus/metisMenu
+	Platform.App.initMenu = function ()
 	{
+
+		$('.menu--sidebar').metisMenu({});
+
+	}
+
+	// Initialize sidebar: http://noraesae.github.io/perfect-scrollbar
+	Platform.App.initSidebar = function ()
+	{
+
+		$('.sidebar').perfectScrollbar();
+
+	}
+
+	// Initialize Bootstrap Tooltips
+	Platform.App.initTooltips = function ()
+	{
+
+		$('.tip, .tooltip, [data-tooltip], [data-toggle="tooltip"]').tooltip({container: 'body'});
+
+	}
+
+	// Initialize Bootstrap Popovers
+	Platform.App.initPopovers = function ()
+	{
+
 		$('.popover, [data-popover], [data-toggle="popover"]').popover({
 			trigger : 'hover'
 		});
+
 	}
 
-	/**
-	 * Initialize Redactor
-	 */
-	Platform.App.redactor = function ()
+	// Initialize Redactor: http://imperavi.com/redactor
+	Platform.App.initRedactor = function ()
 	{
 
 		$('.redactor').redactor({
@@ -158,13 +178,13 @@ var Platform;
 			minHeight: 200,
 			buttonSource: true,
 		});
+
 	}
 
-	/**
-	 * Initialize Parsley Validation
-	 */
-	Platform.App.parsley = function()
+	// Initialize validation: http://parsleyjs.org
+	Platform.App.initValidation = function()
 	{
+
 		window.ParsleyConfig =
 		{
 			errorClass: 'has-error',
@@ -196,11 +216,10 @@ var Platform;
 				});
 			});
 		}
+
 	};
 
-	/**
-	 * Job done, lets run.
-	 */
+	// Job done, lets run.
 	Platform.App.init();
 
 })(window, document, jQuery);

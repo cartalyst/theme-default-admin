@@ -1,4 +1,4 @@
-<aside class="sidebar">
+<aside class="sidebar" data-sidebar>
 
 	<div class="sidebar__brand">
 
@@ -13,7 +13,7 @@
 
 	<nav class="navigation navigation--sidebar">
 
-		@widget('platform/menus::nav.show', array('admin', 0, 'menu', admin_uri(), 'partials/menu'))
+		@widget('platform/menus::nav.show', array('admin', 0, 'menu menu--sidebar', admin_uri(), 'partials/menu'))
 
 	</nav>
 

@@ -31,7 +31,7 @@
 	{{ Asset::queue('perfect-scrollbar', 'perfect-scrollbar/js/perferct-scrollbar.min.js', 'jquery') }}
 	{{ Asset::queue('metisMenu', 'onokumus/js/metisMenu.min.js', 'jquery') }}
 
-	{{ Asset::queue('platform', 'platform/js/platform.js', 'jquery') }}
+	{{ Asset::queue('platform', 'platform/js/platform.js', 'metisMenu') }}
 
 
 
@@ -97,23 +97,6 @@
 		{{-- Call custom inline scripts --}}
 		@section('scripts')
 		@show
-
-		<script>
-
-			$(document).ready(function() {
-				$('.menu').metisMenu({});
-			});
-
-			$(document).ready(function ($) {
-				$('.sidebar').perfectScrollbar();
-			});
-
-			$(".toggle").click(function(e) {
-				e.preventDefault();
-				$(".base").toggleClass("base--collapse");
-			});
-
-		</script>
 
 	</body>
 	</html>
