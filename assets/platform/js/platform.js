@@ -48,11 +48,11 @@ var Platform;
 	Platform.App.init = function()
 	{
 
-		Platform.App.initMenu();
-		Platform.App.initSidebar();
-		Platform.App.initValidation();
-		Platform.App.initTooltips();
-		Platform.App.initPopovers();
+		Platform.App.menu();
+		Platform.App.sidebar();
+		Platform.App.validation();
+		Platform.App.tooltips();
+		Platform.App.popovers();
 
 		if ($.fn.redactor)
 		{
@@ -66,15 +66,15 @@ var Platform;
 	Platform.App.listen = function()
 	{
 
-		Platform.Cache.$alert.on('click', '.alert-close', Platform.App.handleAlerts);
-		Platform.Cache.$body.on('click', '.toggle-sidebar', Platform.App.handleSidebarToggle);
-		Platform.Cache.$body.on('click', '[data-modal], [data-toggle="modal"]', Platform.App.handleModals);
-		Platform.Cache.$body.on('click', '[data-action-delete]', Platform.App.handleDeletes);
+		Platform.Cache.$alert.on('click', '.alert-close', Platform.App.alerts);
+		Platform.Cache.$body.on('click', '.toggle-sidebar', Platform.App.sidebarToggle);
+		Platform.Cache.$body.on('click', '[data-modal], [data-toggle="modal"]', Platform.App.modals);
+		Platform.Cache.$body.on('click', '[data-action-delete]', Platform.App.deletion);
 
 	};
 
 	// Handle Alerts
-	Platform.App.handleAlerts = function(event)
+	Platform.App.alerts = function(event)
 	{
 
 		$(event.delegateTarget).slideToggle(function()
@@ -85,7 +85,7 @@ var Platform;
 	};
 
 	// Handle Bootstrap Modals
-	Platform.App.handleModals = function (event)
+	Platform.App.modals = function (event)
 	{
 
 		event.preventDefault();
@@ -108,8 +108,8 @@ var Platform;
 
 	}
 
-	// Handle deletes: show confirmation modal.
-	Platform.App.handleDeletes = function (event)
+	// Handle deletion: show confirmation modal.
+	Platform.App.deletion = function (event)
 	{
 
 		event.preventDefault();
@@ -126,7 +126,7 @@ var Platform;
 	}
 
 	// Handle sidebar toggle
-	Platform.App.handleSidebarToggle = function (event)
+	Platform.App.sidebarToggle = function (event)
 	{
 
 		event.preventDefault();
@@ -136,7 +136,7 @@ var Platform;
 	}
 
 	// Initialize Menu: https://github.com/onokumus/metisMenu
-	Platform.App.initMenu = function ()
+	Platform.App.menu = function ()
 	{
 
 		$('.menu--sidebar').metisMenu({});
@@ -144,7 +144,7 @@ var Platform;
 	}
 
 	// Initialize sidebar: http://noraesae.github.io/perfect-scrollbar
-	Platform.App.initSidebar = function ()
+	Platform.App.sidebar = function ()
 	{
 
 		$('.sidebar').perfectScrollbar();
@@ -152,7 +152,7 @@ var Platform;
 	}
 
 	// Initialize Bootstrap Tooltips
-	Platform.App.initTooltips = function ()
+	Platform.App.tooltips = function ()
 	{
 
 		$('.tip, .tooltip, [data-tooltip], [data-toggle="tooltip"]').tooltip({container: 'body'});
@@ -160,7 +160,7 @@ var Platform;
 	}
 
 	// Initialize Bootstrap Popovers
-	Platform.App.initPopovers = function ()
+	Platform.App.popovers = function ()
 	{
 
 		$('.popover, [data-popover], [data-toggle="popover"]').popover({
@@ -170,7 +170,7 @@ var Platform;
 	}
 
 	// Initialize Redactor: http://imperavi.com/redactor
-	Platform.App.initRedactor = function ()
+	Platform.App.redactor = function ()
 	{
 
 		$('.redactor').redactor({
@@ -182,7 +182,7 @@ var Platform;
 	}
 
 	// Initialize validation: http://parsleyjs.org
-	Platform.App.initValidation = function()
+	Platform.App.validation = function()
 	{
 
 		window.ParsleyConfig =
