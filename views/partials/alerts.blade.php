@@ -1,6 +1,6 @@
 @if (Alert::all('form'))
 
-<div class="alert-box alert-bar alert-effect-slidetop alert-type-danger alert-show">
+<div data-alert class="alert-box alert-bar alert-effect-slidetop alert-type-danger alert-show">
 	<div class="alert-box-inner">
 	<span class="icon"><i class="fa fa-warning"></i></span>
 		<p>Check the form below for errors.</p>
@@ -12,7 +12,7 @@
 
 @foreach ($alerts = Alert::except('form') as $alert)
 
-<div class="alert-box alert-bar alert-effect-slidetop alert-type-{{ $alert->class }} alert-show">
+<div data-alert class="alert-box alert-bar alert-effect-slidetop alert-type-{{ $alert->class }} alert-show">
 	<div class="alert-box-inner">
 	<span class="icon"><i class="fa fa-info"></i></span>
 		<p>{{ $alert->message }}</p>

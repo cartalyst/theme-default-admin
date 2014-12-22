@@ -90,6 +90,8 @@ var Platform;
 	{
 		$(event.delegateTarget).slideToggle(function()
 		{
+			$(this).removeClass('alert-show');
+			$(this).addClass('alert-hide');
 			$(this).remove();
 		});
 	};
