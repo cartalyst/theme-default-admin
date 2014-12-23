@@ -53,6 +53,8 @@ $danger:         				#a94442;
 	box-sizing: border-box;
 }
 
+a:active { outline: none; }
+
 html,
 body {
 	height: 100%;
