@@ -9,7 +9,7 @@
  * bundled with this package in the license.txt file.
  *
  * @package    Data Grid
- * @version    2.0.0
+ * @version    2.0.3
  * @author     Cartalyst LLC
  * @license    Cartalyst PSL
  * @copyright  (c) 2011-2014, Cartalyst LLC
@@ -27,8 +27,8 @@
 	 */
 	var defaults = {
 		source: null,
-		threshold: 50,
-		throttle: 50,
+		threshold: null,
+		throttle: null,
 		method: 'single',
 		sort: {},
 		sort_classes: {
@@ -48,6 +48,7 @@
 		search_timeout: 800,
 		hash: true,
 		loader: undefined,
+		loader_class: undefined,
 		callback: undefined
 	};
 
@@ -85,6 +86,7 @@
 
 		self.pagination = {
 			page_index: 1,
+			pages: null,
 			total: null,
 			filtered: null,
 			base_throttle: null
@@ -249,8 +251,10 @@
 				self.initial = false;
 			});
 
-			this.$body.on('click', '[data-sort]' + grid + ',' + grid + ' [data-sort]', function()
+			this.$body.on('click', '[data-sort]' + grid + ',' + grid + ' [data-sort]', function(e)
 			{
+				e.preventDefault();
+
 				if (options.method === 'infinite')
 				{
 					self.$results.empty();
@@ -365,9 +369,12 @@
 					{
 						var page = self.pagination.page_index + 1;
 
-						self.goToPage(page);
+						if (page <= self.pagination.pages)
+						{
+							self.goToPage(page);
 
-						self.refresh();
+							self.refresh();
+						}
 					}
 				}, 800);
 
@@ -967,8 +974,9 @@
 		{
 			refresh = refresh !== undefined ? refresh : true;
 
-			var $input = $el.find('input');
-			var column = 'all';
+			var $input   = $el.find('input');
+			var column   = 'all';
+			var operator = $el.data('operator');
 
 			// Make sure we arn't submiting white space only
 			if ( ! $.trim($input.val()).length)
@@ -1000,7 +1008,8 @@
 
 			this.applyFilter({
 				column: column,
-				value: $('<p/>').text($input.val()).html()
+				value: $('<p/>').text($input.val()).html(),
+				operator: operator
 			});
 
 			// Clear results for infinite grids
@@ -1027,8 +1036,9 @@
 		 */
 		handleLiveSearch: function($el)
 		{
-			var column = 'all';
-			var self   = this;
+			var column   = 'all';
+			var self     = this;
+			var operator = $el.data('operator');
 
 			if (is_search_active)
 			{
@@ -1064,7 +1074,8 @@
 					self.applyFilter({
 						column: column,
 						value: $('<p/>').text(curr).html(),
-						type: 'live'
+						type: 'live',
+						operator: operator
 					});
 				}
 
@@ -1401,7 +1412,7 @@
 				var terms_count = route_array[i].match(/:/g).length;
 				var label;
 
-				if ( ! $filter.length && terms_count === 2)
+				if ( ! $filter.length && terms_count === 2 && filter.length !== 3)
 				{
 					// Range filters
 					var $start_filter = this.$body.find('[data-range-start][data-range-filter="' + filter[0] + '"]' + grid + ',' + grid + ' [data-range-start][data-range-filter="' + filter[0] + '"]');
@@ -1421,13 +1432,14 @@
 
 					self.rangeFilter($start_filter, false);
 				}
-				else if (terms_count === 1 && ! $filter.length)
+				else if ((terms_count === 1 || terms_count === 2) && ! $filter.length)
 				{
 					// Search
 					var $search = $('[data-search]' + grid).length > 0 ? $('[data-search]' + grid) : $(grid + ' [data-search]');
+					var input_val = filter[filter.length - 1];
 
 					$search.find('[value="' + filter[0] + '"]').prop('selected', true);
-					$search.find('input').val(filter[1]);
+					$search.find('input').val(input_val);
 
 					self.handleSearchOnSubmit($search, false);
 				}
@@ -1776,6 +1788,11 @@
 					self.response = response;
 				}
 
+				if ( ! self.opt.throttle)
+				{
+					self.opt.throttle = response.per_page;
+				}
+
 				if (self.pagination.page_index > response.pages)
 				{
 					self.pagination.page_index = response.pages;
@@ -1804,6 +1821,8 @@
 				}
 
 				self.$pagination.html(self.tmpl.pagination(self.buildPagination(response)));
+
+				self.pagination.pages = response.pages;
 
 				if ( ! response.results.length)
 				{
@@ -1865,8 +1884,16 @@
 			params.filters   = [];
 			params.page      = this.pagination.page_index;
 			params.method    = this.opt.method;
-			params.threshold = this.opt.threshold;
-			params.throttle  = this.opt.throttle;
+
+			if (this.opt.threshold)
+			{
+				params.threshold = this.opt.threshold;
+			}
+
+			if (this.opt.throttle)
+			{
+				params.throttle = this.opt.throttle;
+			}
 
 			var filters = [];
 
@@ -1943,7 +1970,20 @@
 				{
 					if (filters[i].column === 'all')
 					{
-						params.filters.push($('<p/>').html(filters[i].value).text());
+						if (filters[i].operator !== undefined && filters[i].operator !== '')
+						{
+							filter =
+								'|' +
+								filters[i].operator +
+								$('<p/>').html(filters[i].value).text() +
+								'|';
+						}
+						else
+						{
+							filter = $('<p/>').html(filters[i].value).text();
+						}
+
+						params.filters.push(filter);
 					}
 					else
 					{
@@ -2210,6 +2250,11 @@
 			var grid   = this.grid,
 				loader = this.opt.loader;
 
+			if (this.opt.loader_class)
+			{
+				this.$body.find(grid + loader + ',' + grid + ' ' + loader).addClass(this.opt.loader_class);
+			}
+
 			this.$body.find(grid + loader + ',' + grid + ' ' + loader).finish().fadeIn();
 		},
 
@@ -2222,6 +2267,11 @@
 		{
 			var grid   = this.grid,
 				loader = this.opt.loader;
+
+			if (this.opt.loader_class)
+			{
+				this.$body.find(grid + loader + ',' + grid + ' ' + loader).removeClass(this.opt.loader_class);
+			}
 
 			this.$body.find(grid + loader + ',' + grid + ' ' + loader).finish().fadeOut();
 		},
