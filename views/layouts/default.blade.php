@@ -28,13 +28,11 @@
 
 	{{ Asset::queue('modernizr', 'modernizr/js/modernizr.js') }}
 	{{ Asset::queue('jquery', 'jquery/js/jquery.js', 'modernizr') }}
+	{{ Asset::queue('pace', 'hubspot/js/pace.min.js', 'jquery') }}
 	{{ Asset::queue('bootstrap', 'bootstrap/js/bootstrap.min.js', 'jquery') }}
 	{{ Asset::queue('perfect-scrollbar', 'perfect-scrollbar/js/perferct-scrollbar.min.js', 'jquery') }}
 	{{ Asset::queue('metisMenu', 'onokumus/js/metisMenu.min.js', 'jquery') }}
-
 	{{ Asset::queue('platform', 'platform/js/platform.js', 'metisMenu') }}
-
-
 
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 		<!--[if lt IE 9]>
