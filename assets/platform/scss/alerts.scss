@@ -1,14 +1,11 @@
 /* Common, default styles for the notification box */
 
 .alert-box {
-	background: rgba(42,45,50,0.95);
 	max-height:64px;
 	padding:16px 0;
 	z-index: 10000;
 	pointer-events: none;
-	color: rgba(250,251,255,0.95);
 	font-size: 90%;
-	font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Arial, saalert-serif;
 }
 
 .alert-box.alert-show {
