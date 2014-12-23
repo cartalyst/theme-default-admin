@@ -29,37 +29,31 @@ var Platform;
 		Cache: {}
 	};
 
-	/**
-	 * Platform Base URL
-	 */
+	// Platform Base URL
 	Platform.Urls.base = $('meta[name="base_url"]').attr('content');
 
-	/**
-	 * CSRF on AJAX requests
-	 */
+	// CSRF on AJAX requests
 	$.ajaxSetup({
 		headers: {
 			'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
 		}
 	});
 
-	/**
-	 * Cache common selectors
-	 */
+	// Cache common selectors
 	Platform.Cache.$win   = $(window);
 	Platform.Cache.$body  = $(document.body);
 	Platform.Cache.$alert = $('[data-alert]');
 
-	/**
-	 * Initialize functions
-	 */
+	// Initialize functions
 	Platform.App.init = function()
 	{
+
 		Platform.App.menu();
 		Platform.App.sidebar();
 		Platform.App.validation();
 		Platform.App.tooltips();
 		Platform.App.popovers();
+		Platform.App.pace();
 
 		if ($.fn.redactor)
 		{
@@ -69,9 +63,7 @@ var Platform;
 		Platform.App.listen();
 	};
 
-	/**
-	 * Add Listeners
-	 */
+	// Add Listeners
 	Platform.App.listen = function()
 	{
 		Platform.Cache.$alert.on('click', '.alert-close', Platform.App.alerts);
@@ -83,9 +75,7 @@ var Platform;
 		;
 	};
 
-	/**
-	 * Handle Alerts
-	 */
+	// Handle Alerts
 	Platform.App.alerts = function(event)
 	{
 		$(event.delegateTarget).slideToggle(function()
@@ -96,21 +86,17 @@ var Platform;
 		});
 	};
 
-	/**
-	 * Handle Bootstrap Modals
-	 */
+	// Handle Bootstrap Modals
 	Platform.App.modals = function (event)
 	{
 		event.preventDefault();
 
-		/**
-		 * Get the modal target
-		 */
+		// Get the modal target
+
 		var target = $(this).data('target');
 
-		/**
-		 * Is this modal target a confirmation?
-		 */
+		// Is this modal target a confirmation?
+
 		if (target === 'modal-confirm')
 		{
 			$('#modal-confirm .confirm').attr('href', $(this).attr('href'));
@@ -128,9 +114,7 @@ var Platform;
 		}
 	}
 
-	/**
-	 * Handle deletion: show confirmation modal.
-	 */
+	// Handle deletion: show confirmation modal.
 	Platform.App.deletion = function (event)
 	{
 		event.preventDefault();
@@ -145,9 +129,7 @@ var Platform;
 		$form.append('<input type="hidden" name="_method" value="delete">').submit();
 	}
 
-	/**
-	 * Handle sidebar toggle
-	 */
+	// Handle sidebar toggle
 	Platform.App.sidebarToggle = function (event)
 	{
 		event.preventDefault();
@@ -155,25 +137,19 @@ var Platform;
 		$('.base').toggleClass('base--collapse');
 	}
 
-	/**
-	 * Initialize Menu: https://github.com/onokumus/metisMenu
-	 */
+	// Initialize Menu: https://github.com/onokumus/metisMenu
 	Platform.App.menu = function ()
 	{
 		$('.menu--sidebar').metisMenu({});
 	}
 
-	/**
-	 * Initialize sidebar: http://noraesae.github.io/perfect-scrollbar
-	 */
+	// Initialize sidebar: http://noraesae.github.io/perfect-scrollbar
 	Platform.App.sidebar = function ()
 	{
 		$('.sidebar').perfectScrollbar();
 	}
 
-	/**
-	 * Initialize Bootstrap Tooltips
-	 */
+	// Initialize Bootstrap Tooltips
 	Platform.App.tooltips = function ()
 	{
 		$('.tip, .tooltip, [data-tooltip], [data-toggle="tooltip"]').tooltip({
@@ -181,9 +157,7 @@ var Platform;
 		});
 	}
 
-	/**
-	 * Initialize Bootstrap Popovers
-	 */
+	// Initialize Bootstrap Popovers
 	Platform.App.popovers = function ()
 	{
 		$('.popover, [data-popover], [data-toggle="popover"]').popover({
@@ -191,9 +165,16 @@ var Platform;
 		});
 	}
 
-	/**
-	 * Initialize Redactor: http://imperavi.com/redactor
-	 */
+	// Initialize pace loading: http://github.hubspot.com/pace/
+	Platform.App.pace = function()
+	{
+		window.paceOptions =
+		{
+			 restartOnPushState: false
+		};
+	};
+
+	// Initialize Redactor: http://imperavi.com/redactor
 	Platform.App.redactor = function ()
 	{
 		$('.redactor').redactor({
@@ -203,9 +184,7 @@ var Platform;
 		});
 	}
 
-	/**
-	 * Initialize the form validation
-	 */
+	// Initialize the form validation
 	Platform.App.validation = function()
 	{
 		window.ParsleyConfig =
@@ -241,9 +220,7 @@ var Platform;
 		}
 	};
 
-	/**
-	 * Job done, lets run
-	 */
+	// Job done, lets run
 	Platform.App.init();
 
 })(window, document, jQuery);
