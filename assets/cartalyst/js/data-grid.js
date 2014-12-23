@@ -2255,7 +2255,7 @@
 				this.$body.find(grid + loader + ',' + grid + ' ' + loader).addClass(this.opt.loader_class);
 			}
 
-			this.$body.find(grid + loader + ',' + grid + ' ' + loader).finish().fadeIn();
+			this.$body.find(grid + loader + ',' + grid + ' ' + loader).finish();
 		},
 
 		/**
@@ -2273,7 +2273,7 @@
 				this.$body.find(grid + loader + ',' + grid + ' ' + loader).removeClass(this.opt.loader_class);
 			}
 
-			this.$body.find(grid + loader + ',' + grid + ' ' + loader).finish().fadeOut();
+			this.$body.find(grid + loader + ',' + grid + ' ' + loader).finish();
 		},
 
 		/**

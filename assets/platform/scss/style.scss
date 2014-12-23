@@ -451,52 +451,51 @@ body {
 // }
 
 
-/* Effect 11: Big counter */
 
-.loading {
-	position: fixed;
-	right: 20px;
-	z-index: -1;
-	display: inline-block;
-	visibility: hidden;
-	overflow: hidden;
-	height: 1em;
-	text-align: right;
-	font-weight: 300;
-	font-size: 10em;
-	line-height: 1em;
-	pointer-events: none;
-}
-
-.loading.la-animate {
-	visibility: visible;
-}
-
-.loading::after {
-	position: relative;
-	width: 100%;
-	color: rgba(0,0,0,0.1);
-	content: "0%\A 10%\A 22%\A 36%\A 48%\A 53%\A 64%\A 71%\A 83%\A 100%\A";
-	white-space: pre;
-}
-
-.loading.la-animate::after {
-	-webkit-animation: counter 6s steps(10);
-	animation: counter 6s steps(10);
-}
-
-@keyframes counter {
-	0% { top: 0; }
-	100% { top: -10em; opacity: 0;}
-}
-@-webkit-keyframes counter {
-	0% { top: 0; }
-	100% { top: -10em; opacity: 0;}
-}
 
 .pagination-sm {
 	margin-top: 0;
 }
+
+
+/* Effect 13: Flat bar top */
+.loading {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 1;
+	width: 100%;
+	height: 50px;
+	background: rgba(0,0,0,0.1);
+	pointer-events: none;
+	-webkit-transform: translate3d(0, -100%, 0);
+	transform: translate3d(0, -100%, 0);
+}
+
+.loading::before {
+	position: absolute;
+	content: '';
+	height: 100%;
+	width: 100%;
+	background: $brand-primary;
+	opacity: 0;
+	-webkit-transform: translate3d(-100%, 0, 0);
+	transform: translate3d(-100%, 0, 0);
+}
+
+.loading.active::before {
+	opacity: 1;
+	-webkit-transition: -webkit-transform 1s linear 0.1s;
+	transition: transform 1s linear 0.1s;
+}
+
+.loading.active,
+.loading.active::before {
+	-webkit-transform: translate3d(0, 0, 0);
+	transform: translate3d(0, 0, 0);
+}
+
+
 
 .data-grid-search {
 	margin-right:5px;
@@ -573,4 +572,37 @@ table.table {
 	}
 }
 
-
+/* Switches */
+ .sw {
+ 	display: none;
+ }
+ .switch {
+ 	position: relative;
+ 	display: inline-block;
+ 	vertical-align: text-bottom;
+ 	cursor: pointer;
+ 	border-radius: 24px;
+ 	transition: background 250ms 100ms;
+ 	background-color: #c7c7c7;
+ 	width: 72px;
+ 	height: 28px;
+ 	line-height: 50px;
+ 	margin: 10px 0px 0px 0px;
+ }
+ .switch:after {
+ 	position: absolute;
+ 	content: '';
+ 	width: 24px;
+ 	height: 24px;
+ 	top: 2px;
+ 	left: 2px;
+ 	border-radius: 50%;
+ 	transition: 150ms linear;
+ 	background-color: white;
+ }
+ input:checked + .switch {
+ 	background: #4582ec;
+ }
+ input:checked + .switch:after {
+ 	left: 46px;
+ }
