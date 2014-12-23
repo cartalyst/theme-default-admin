@@ -514,6 +514,9 @@ label .popover-content {
 
 table.table {
 	thead th {
+		&:first-child {
+			text-align: center;
+		}
 		&.sortable {
 			cursor: pointer;
 			*cursor: hand;
@@ -539,7 +542,12 @@ table.table {
 		}
 	}
 
-	tbody td { vertical-align: middle; }
+	tbody td {
+		vertical-align: middle;
+		&:first-child {
+			text-align: center;
+		}
+	}
 }
 
 .well-borderless { border: none; border-radius: none; box-shadow: none; }
