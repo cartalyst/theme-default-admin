@@ -114,6 +114,10 @@ var Platform;
 		if (target === 'modal-confirm')
 		{
 			$('#modal-confirm .confirm').attr('href', $(this).attr('href'));
+			$('#modal-confirm .confirm').on('click', function()
+			{
+				$('#modal-confirm').modal('hide');
+			});
 
 			$('#modal-confirm').modal({
 				show: true,
