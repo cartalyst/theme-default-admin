@@ -91,7 +91,7 @@ body {
 		border-right:1px solid $sidebar-dark;
 
 		> header {
-			min-height:64px;
+			min-height: 64px;
 		}
 
 		.alert-box {
@@ -124,9 +124,18 @@ body {
 /* Navigation */
 .navigation {
 
+	&.navigation--account {
+
+		padding:8px 0 16px 0;
+
+		.fa {
+			font-size:18px;
+		}
+
+	}
+
 	&.navigation--header {
 
-		max-height: 80px;
 		padding:8px 0 16px 0;
 
 		ul {
@@ -141,6 +150,11 @@ body {
 
 		.fa {
 			font-size:18px;
+		}
+
+
+		.toggle-sidebar {
+			cursor: pointer;
 		}
 
 		.toggle-sidebar {
