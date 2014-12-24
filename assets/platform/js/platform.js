@@ -48,12 +48,12 @@ var Platform;
 	Platform.App.init = function()
 	{
 
+		Platform.App.pace();
 		Platform.App.menu();
 		Platform.App.sidebar();
 		Platform.App.validation();
 		Platform.App.tooltips();
 		Platform.App.popovers();
-		Platform.App.pace();
 
 		if ($.fn.redactor)
 		{
@@ -170,7 +170,8 @@ var Platform;
 	{
 		window.paceOptions =
 		{
-			 restartOnPushState: false
+			restartOnPushState: false,
+			trackWebSockets: false
 		};
 	};
 

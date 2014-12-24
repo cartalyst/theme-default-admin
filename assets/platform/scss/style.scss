@@ -101,11 +101,22 @@ body {
 
 	}
 
+	.extension {
+
+		.extension__actions {
+			position: fixed;
+			bottom:0;
+			left:240px;
+			right:16px;
+		}
+	}
+
 	&.base--collapse {
 		padding-left:0;
 	}
 
-	&.base--collapse .sidebar {
+	&.base--collapse .sidebar,
+	&.base--collapse .extension .extension__actions {
 		left:-248px;
 
 		.navigation--sidebar {
@@ -296,9 +307,19 @@ body {
 }
 
 
+.extension {
 
+	.extension__actions {
+		background: #fff;
+		border:0;
+		border-top:1px solid $sidebar-dark;
+		border-right:1px solid $sidebar-dark;
+		border-radius: 0;
+		margin:0;
+		padding:8px 16px 32px;
 
-
+	}
+}
 
 
 // #page-content-wrapper {
@@ -532,7 +553,8 @@ label .popover-content {
 	width: 276px;
 }
 
-table.table {
+.data-grid.table {
+
 	thead th {
 		&:first-child {
 			text-align: center;
