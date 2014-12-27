@@ -16,7 +16,7 @@
  * @link       http://cartalyst.com
  */
 
-/* Template defaults */
+/* Theme defaults */
 $body:							#f7f7f7;
 $body-header:					#ffffff;
 $body-footer:					#ffffff;
@@ -36,7 +36,6 @@ $text-dark: 					darken($text, 45%);
 $text-light: 					lighten($text, 15%);
 
 /* Overide Bootstrap */
-
 $brand-primary:					#428bca;
 $brand-success:					#5cb85c;
 $brand-info:					#5bc0de;
@@ -81,10 +80,7 @@ body {
 		padding-left: 0;
 		margin-left: 0;
 		background:$page;
-		height: 100%;
-		margin-right:16px;
-		border-right:1px solid $sidebar-dark;
-
+		height: 100;
 		> header {
 			min-height: 64px;
 		}
@@ -92,7 +88,7 @@ body {
 		.alert-box {
 			position: absolute;
 			left:240px;
-			right:16px;
+			right:0;
 		}
 
 		.page__content {
@@ -107,7 +103,7 @@ body {
 			position: fixed;
 			bottom:0;
 			left:240px;
-			right:16px;
+			right:0px;
 		}
 	}
 
@@ -309,6 +305,16 @@ body {
 
 .extension {
 
+	.extension__header {
+		padding:8px 0;
+		margin-bottom:8px;
+
+		small {
+			font-weight: 300;
+			float:right;
+		}
+	}
+
 	.extension__actions {
 		background: #fff;
 		border:0;
@@ -428,9 +434,6 @@ body {
 	}
 }
 
-.page-header {
-	margin-top: 0;
-}
 
 .tab-content {
 	padding: 25px;
@@ -539,23 +542,18 @@ body {
 	pointer-events: none;
 }
 
-.data-grid-search {
-	margin-right:5px;
-}
-
 [data-toggle="popover"], [data-toggle="tooltip"] {
 	cursor: pointer;
 }
-
 
 label .popover-content {
 	font-weight: normal;
 	width: 276px;
 }
 
-.data-grid.table {
-
+#data-grid {
 	thead th {
+		border-bottom:0;
 		&:first-child {
 			text-align: center;
 		}
@@ -563,7 +561,6 @@ label .popover-content {
 			cursor: pointer;
 			*cursor: hand;
 			position: relative;
-
 			&:before {
 				content: '\f0dc';
 				font-family: FontAwesome;
@@ -575,15 +572,13 @@ label .popover-content {
 				font-size: 14px;
 				padding-right: 0.5em;
 				position: absolute;
-				top: 8px;
-				right: 3px;
+				top: 6px;
+				right: 4px;
 			}
-
 			&.asc:before { content: '\f0dd'; }
 			&.desc:before { content: '\f0de'; }
 		}
 	}
-
 	tbody td {
 		vertical-align: middle;
 		&:first-child {
@@ -591,6 +586,8 @@ label .popover-content {
 		}
 	}
 }
+
+
 
 .well-borderless { border: none; border-radius: none; box-shadow: none; }
 
@@ -649,3 +646,52 @@ input:checked + .switch {
 input:checked + .switch:after {
 	left: 46px;
 }
+
+
+
+
+
+
+
+/* #Forms
+================================================== */
+
+form .help-block,
+form .error-block,
+form .parsley-help-block {
+	display: block;
+	margin-top:8px;
+	font-style: italic;
+}
+
+form .error-block,
+form .parsley-help-block {
+	color: $brand-danger;
+}
+
+form .input-group .form-control {
+
+}
+
+/* #Bootstrap
+================================================== */
+
+.panel-default {
+
+	.panel-body {
+		background: $sidebar;
+	}
+	.panel-heading,
+	.panel-footer {
+
+		background: $page;
+
+		.pagination {
+			margin-bottom:0;
+		}
+	}
+}
+
+
+
+
