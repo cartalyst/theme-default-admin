@@ -47,7 +47,6 @@ var Platform;
 	// Initialize functions
 	Platform.App.init = function()
 	{
-
 		Platform.App.pace();
 		Platform.App.menu();
 		Platform.App.sidebar();
@@ -92,18 +91,18 @@ var Platform;
 		event.preventDefault();
 
 		// Get the modal target
-
 		var target = $(this).data('target');
 
 		// Is this modal target a confirmation?
-
 		if (target === 'modal-confirm')
 		{
-			$('#modal-confirm .confirm').attr('href', $(this).attr('href'));
-			$('#modal-confirm .confirm').on('click', function()
-			{
-				$('#modal-confirm').modal('hide');
-			});
+			$('#modal-confirm .confirm')
+				.attr('href', $(this).attr('href'))
+				.on('click', function()
+				{
+					$('#modal-confirm').modal('hide');
+				})
+			;
 
 			$('#modal-confirm').modal({
 				show: true,
