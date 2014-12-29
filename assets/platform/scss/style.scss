@@ -302,12 +302,15 @@ body {
 .extension {
 
 	.extension__header {
-		padding:8px 0;
-		margin-bottom:8px;
 
-		small {
-			font-weight: 300;
+		margin:8px 0 16px 0;
+
+		h1 {
+			float:left;
+		}
+		form {
 			float:right;
+			margin-top:24px;
 		}
 	}
 
