@@ -1,37 +1,41 @@
-<div class="row">
+<div class="clearfix">
 
-	<div class="col-xs-6 col-sm-4">
+	<nav class="navigation navigation--header pull-left">
 
-		<nav class="navigation navigation--header pull-left">
+		<ul class="nav nav-pills">
 
-			<ul class="nav nav-pills">
+			<li>
+				<a class="toggle-sidebar" data-tooltip="" data-placement="right" data-title="Sidebar" data-original-title="" title="">
+					<i class="fa fa-bars"></i>
+				</a>
+			</li>
 
-				<li>
-					<a class="toggle-sidebar" data-tooltip="" data-placement="right" data-title="Sidebar" data-original-title="" title="">
-						<i class="fa fa-bars"></i>
-					</a>
-				</li>
+		</ul>
 
-			</ul>
+	</nav>
 
-		</nav>
+	<nav class="navigation navigation--header pull-right">
 
-	</div>
+		@widget('platform/menus::nav.show', array('system', 0, 'nav nav-pills', '', 'partials/navigation/system'))
 
-	<div class="col-xs-3 col-sm-8">
+	</nav>
 
-		<nav class="navigation navigation--header pull-right">
+	<nav class="navigation navigation--account pull-right">
 
-			@widget('platform/menus::nav.show', array('system', 0, 'nav nav-pills', '', 'partials/navigation/system'))
+		<ul class="nav nav-pills">
+			<li class="dropdown">
 
-		</nav>
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-user visible-xs-inline"></i> <span class="hidden-xs">{{ $currentUser->email }}</span> <span class="caret"></span></a>
 
-		<nav class="navigation navigation--account pull-right">
+				<ul class="dropdown-menu" role="menu">
+					<li><a href="{{ URL::toAdmin("users/{$currentUser->id}") }}">Profile</a></li>
+					<li class="divider"></li>
+					<li><a href="{{ URL::to('/logout') }}">Sign Out</a></li>
+				</ul>
 
-			@include('partials/navigation/profile')
+			</li>
+		</ul>
 
-		</nav>
-
-	</div>
+	</nav>
 
 </div>
