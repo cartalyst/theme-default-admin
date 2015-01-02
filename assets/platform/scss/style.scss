@@ -34,6 +34,10 @@ $page: 							#f7f7f7;
 $page-dark: 					darken($page, 45%);
 $page-light: 					lighten($page, 15%);
 
+$panel: 						#ffffff;
+$panel-dark: 					darken($panel, 45%);
+$panel-light: 					lighten($panel, 15%);
+
 $text:							#74777b;
 $text-dark: 					darken($text, 45%);
 $text-light: 					lighten($text, 15%);
@@ -150,40 +154,43 @@ body {
 	.page__content {
 		margin:0 16px;
 		padding:0;
-		border:1px solid $border;
-		background-color:#fff;
-		border-radius:4px;
 	}
 }
 
-// Extensions =================================================================
-.extension {
-	> main,
-	> footer {
-		padding-right: 15px;
-		padding-left: 15px;
-		margin-right: auto;
-		margin-left: auto;
-	}
+// Panels ====================================================================
+.panel {
 
-	> header {
-		margin:16px 0;
-		border-bottom:1px solid $border;
+	&.panel-grid {
 
-		.navbar-form {
-			margin-right:-30px;
+		.panel-heading,
+		.panel-footer {
+			background: $panel;
+			padding-right: 15px;
+			padding-left: 15px;
+			margin-right: auto;
+			margin-left: auto;
 		}
-	}
 
-	> main {
-		border-bottom:1px solid $border;
-	}
+		.panel-heading {
+			border-bottom:1px solid $border;
 
-	> footer {
-		margin-top:16px;
-		.pagination {
-			margin-top:0;
-			margin-bottom:16px;
+			.navbar-form {
+				margin-right:-30px;
+			}
+		}
+
+		.panel-body {
+
+		}
+
+		.panel-footer {
+			padding-top:8px;
+			background-color: $panel;
+
+			.pagination {
+				margin-top:0;
+				margin-bottom:0;
+			}
 		}
 	}
 }
@@ -418,6 +425,12 @@ body {
 label .popover-content {
 	font-weight: normal;
 	width: 276px;
+}
+
+.grid {
+	.grid__crumbs {
+
+	}
 }
 
 #data-grid {
