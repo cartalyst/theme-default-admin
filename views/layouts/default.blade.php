@@ -23,7 +23,6 @@
 	{{ Asset::queue('font-awesome', 'font-awesome/css/font-awesome.min.css') }}
 	{{ Asset::queue('metisMenu', 'onokumus/css/metisMenu.min.css') }}
 	{{ Asset::queue('perfect-scrollbar', 'perfect-scrollbar/css/perfect-scrollbar.css') }}
-	{{ Asset::queue('alerts', 'platform/scss/alerts.scss') }}
 	{{ Asset::queue('style', 'platform/scss/style.scss') }}
 
 	{{ Asset::queue('modernizr', 'modernizr/js/modernizr.js') }}
@@ -61,21 +60,21 @@
 
 		<section class="base">
 
-			<!-- Sidebar -->
+			{{-- Sidebar --}}
 			@include('partials/sidebar')
 
-			<!-- Page -->
+			{{-- Page --}}
 			<main class="page">
 
-				<!-- Alerts -->
+				{{-- Alerts --}}
 				@include('partials/alerts')
 
-				<!-- Page Header -->
-				<header class="page__header container-fluid">
+				{{-- Page Header --}}
+				<header class="page__header container-fluid clearfix">
 					@include('partials/header')
 				</header>
 
-				<!-- Page Content-->
+				{{-- Page Content--}}
 				<div class="page__content container-fluid">
 					@yield('content')
 				</div>
