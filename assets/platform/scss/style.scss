@@ -201,7 +201,57 @@ body {
 			}
 		}
 	}
+
+	&.panel-tabs {
+
+		.panel-heading,
+		.panel-footer {
+			background: $panel;
+			padding-right: 0;
+			padding-left: 0;
+			margin-right: auto;
+			margin-left: auto;
+
+			.navbar {
+				margin-bottom:0;
+			}
+
+			.navbar-right {
+				margin-right:-15px;
+			}
+
+			.navbar-btn {
+				margin:0;
+			}
+
+			.nav-tabs{
+				border-bottom: none;
+			}
+
+			.nav-justified{
+				margin-bottom: -1px;
+			}
+
+		}
+
+		.panel-body {
+			margin:0;
+			padding:0;
+
+			.nav-tabs li:first-child {
+				padding-left:16px;
+			}
+		}
+
+
+
+
+	}
 }
+
+
+
+
 
 // Navigation =================================================================
 
@@ -605,6 +655,14 @@ form .input-group .form-control {
 
 	&-brand {
 		padding-top: 16px;
+
+		small {
+			font-weight: 300;
+		}
+	}
+
+	&-cancel {
+		max-width: 100px;
 	}
 
 }
