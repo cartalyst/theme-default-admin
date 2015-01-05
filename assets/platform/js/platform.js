@@ -86,22 +86,27 @@ var Platform;
 	};
 
 	// Handle Bootstrap Modals
-	Platform.App.modals = function (event)
+	Platform.App.modals = function(event, target, callback)
 	{
 		event.preventDefault();
 
 		// Get the modal target
-		var target = $(this).data('target');
+		var target = target ? target : $(this).data('target');
+
+		if ( ! callback)
+		{
+			callback = function()
+			{
+				$('#modal-confirm').modal('hide');
+			};
+		}
 
 		// Is this modal target a confirmation?
 		if (target === 'modal-confirm')
 		{
 			$('#modal-confirm .confirm')
 				.attr('href', $(this).attr('href'))
-				.on('click', function()
-				{
-					$('#modal-confirm').modal('hide');
-				})
+				.on('click', callback)
 			;
 
 			$('#modal-confirm').modal({
@@ -114,22 +119,24 @@ var Platform;
 	}
 
 	// Handle deletion: show confirmation modal.
-	Platform.App.deletion = function (event)
+	Platform.App.deletion = function(event)
 	{
 		event.preventDefault();
 
-		var $form = $(this).parents('form:first');
-
-		if (action = $(this).data('action-delete'))
+		Platform.App.modals(event, 'modal-confirm', function()
 		{
-			$form.attr('action', action);
-		}
+			var $form = $(this).parents('form:first');
 
-		$form.append('<input type="hidden" name="_method" value="delete">').submit();
+			$form.attr('action', $(this).attr('href'));
+
+			$('#modal-confirm').modal('hide');
+
+			$form.append('<input type="hidden" name="_method" value="delete">').submit();
+		});
 	}
 
 	// Handle sidebar toggle
-	Platform.App.sidebarToggle = function (event)
+	Platform.App.sidebarToggle = function(event)
 	{
 		event.preventDefault();
 
@@ -137,19 +144,19 @@ var Platform;
 	}
 
 	// Initialize Menu: https://github.com/onokumus/metisMenu
-	Platform.App.menu = function ()
+	Platform.App.menu = function()
 	{
 		$('.menu--sidebar').metisMenu({});
 	}
 
 	// Initialize sidebar: http://noraesae.github.io/perfect-scrollbar
-	Platform.App.sidebar = function ()
+	Platform.App.sidebar = function()
 	{
 		$('.sidebar').perfectScrollbar();
 	}
 
 	// Initialize Bootstrap Tooltips
-	Platform.App.tooltips = function ()
+	Platform.App.tooltips = function()
 	{
 		$('.tip, .tooltip, [data-tooltip], [data-toggle="tooltip"]').tooltip({
 			container: 'body',
@@ -157,7 +164,7 @@ var Platform;
 	}
 
 	// Initialize Bootstrap Popovers
-	Platform.App.popovers = function ()
+	Platform.App.popovers = function()
 	{
 		$('.popover, [data-popover], [data-toggle="popover"]').popover({
 			trigger : 'hover'
@@ -175,7 +182,7 @@ var Platform;
 	};
 
 	// Initialize Redactor: http://imperavi.com/redactor
-	Platform.App.redactor = function ()
+	Platform.App.redactor = function()
 	{
 		$('.redactor').redactor({
 			toolbarFixed: true,
@@ -191,11 +198,11 @@ var Platform;
 		{
 			errorClass: 'has-error',
 			successClass: 'has-success',
-			classHandler: function (Field)
+			classHandler: function(Field)
 			{
 				return Field.$element.parents('.form-group');
 			},
-			errorsContainer: function (Field)
+			errorsContainer: function(Field)
 			{
 				return Field.$element.parents('.form-group');
 			},
