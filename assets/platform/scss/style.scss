@@ -63,6 +63,99 @@ body {
 	height: 100%;
 }
 
+// Bootstrap Overrides ========================================================
+
+.navbar {
+	background: $page-light;
+	border: none;
+
+	&-nav,
+	&-form {
+		margin:8px 0;
+	}
+
+	&-nav > li > a {
+		padding: 6px 10px;
+		margin:0 4px;
+		border: 1px solid transparent;
+		border-radius: 4px;
+
+		&:hover {
+			border: 1px solid #ddd;
+		}
+
+		i + span {
+			display: inline-block;
+			margin-left:8px;
+		}
+	}
+
+	&-nav > li.primary > a:hover,
+	&-nav > li.primary > a:focus {
+		color: $brand-primary;
+		background-color:transparent;
+		border-color:$brand-primary;
+	}
+
+	&-brand {
+		padding-top: 16px;
+
+		small {
+			font-weight: 300;
+		}
+	}
+
+	&-cancel {
+		max-width: 100px;
+	}
+
+}
+
+.tab-content {
+	padding: 25px;
+	margin-bottom: 25px;
+}
+
+.tab-content.tab-bordered {
+	border: 1px solid #ddd;
+	border-top: none;
+}
+
+.nav-tabs {
+	margin-bottom: 0;
+}
+
+[data-toggle="popover"], [data-toggle="tooltip"] {
+	cursor: pointer;
+}
+
+.well-borderless {
+	border: none;
+	border-radius: none;
+	box-shadow: none;
+}
+
+/* #Forms
+================================================== */
+
+form .help-block,
+form .error-block,
+form .parsley-help-block {
+	display: block;
+	margin-top:8px;
+	font-style: italic;
+}
+
+form .error-block,
+form .parsley-help-block {
+	color: $brand-danger;
+}
+
+label .popover-content {
+	font-weight: normal;
+	width: 276px;
+}
+
 // Base =======================================================================
 .base {
 	background-color: $base;
@@ -84,7 +177,6 @@ body {
 }
 
 // Sidebar ====================================================================
-
 .sidebar {
 	position: fixed;
 	left: 0;
@@ -242,19 +334,10 @@ body {
 				padding-left:16px;
 			}
 		}
-
-
-
-
 	}
 }
 
-
-
-
-
 // Navigation =================================================================
-
 .navigation {
 
 	&.navigation--account {
@@ -368,7 +451,6 @@ body {
 }
 
 // Alerts =====================================================================
-
 .alert-box {
 	position: absolute;
 	left:240px;
@@ -382,7 +464,6 @@ body {
 }
 
 // Loader =====================================================================
-
 .pace {
 	-webkit-pointer-events: none;
 	pointer-events: none;
@@ -406,90 +487,8 @@ body {
 	height: 3px;
 }
 
-
-
-
-
-
-
-
-
-/* Wrapper for page content to push down footer */
-
-// .dropdown-submenu {
-// 	position:relative;
-
-// 	&>.dropdown-menu {
-// 		top: 0;
-// 		left: 100%;
-// 		margin-top: -6px;
-// 		margin-left: -1px;
-// 		-webkit-border-radius: 0 6px 6px 6px;
-// 		-moz-border-radius: 0 6px 6px 6px;
-// 		border-radius: 0 6px 6px 6px;
-// 	}
-
-// 	&:hover >.dropdown-menu { display: block; }
-
-// 	&>a:after {
-// 		display: block;
-// 		content: " ";
-// 		float: right;
-// 		width: 0;
-// 		height: 0;
-// 		border-color: transparent;
-// 		border-style: solid;
-// 		border-width: 5px 0 5px 5px;
-// 		border-left-color: #cccccc;
-// 		margin-top: 5px;
-// 		margin-right: -10px;
-// 	}
-
-// 	&:hover>a:after { border-left-color: #ffffff; }
-
-// 	&.pull-left { float: none; }
-
-// 	&.pull-left>.dropdown-menu {
-// 		left: -100%;
-// 		margin-left: 10px;
-// 		-webkit-border-radius: 6px 0 6px 6px;
-// 		-moz-border-radius: 6px 0 6px 6px;
-// 		border-radius: 6px 0 6px 6px;
-// 	}
-// }
-
-
-.tab-content {
-	padding: 25px;
-	margin-bottom: 25px;
-}
-
-.tab-content.tab-bordered {
-	border: 1px solid #ddd;
-	border-top: none;
-}
-
-.nav-tabs {
-	margin-bottom: 0;
-}
-
-
-
-
-[data-toggle="popover"], [data-toggle="tooltip"] {
-	cursor: pointer;
-}
-
-label .popover-content {
-	font-weight: normal;
-	width: 276px;
-}
-
-.grid {
-	.grid__crumbs {
-
-	}
-}
+/* Data Grid
+================================================== */
 
 #data-grid {
 
@@ -531,9 +530,8 @@ label .popover-content {
 	}
 }
 
-
-
-.well-borderless { border: none; border-radius: none; box-shadow: none; }
+/* Not Sure
+================================================== */
 
 .btn-file {
 	position: relative;
@@ -556,113 +554,3 @@ label .popover-content {
 	}
 }
 
-/* Switches */
-.sw {
-	display: none;
-}
-.switch {
-	position: relative;
-	display: inline-block;
-	vertical-align: text-bottom;
-	cursor: pointer;
-	border-radius: 24px;
-	transition: background 250ms 100ms;
-	background-color: #c7c7c7;
-	width: 72px;
-	height: 28px;
-	line-height: 50px;
-	margin: 10px 0px 0px 0px;
-}
-.switch:after {
-	position: absolute;
-	content: '';
-	width: 24px;
-	height: 24px;
-	top: 2px;
-	left: 2px;
-	border-radius: 50%;
-	transition: 150ms linear;
-	background-color: white;
-}
-input:checked + .switch {
-	background: #4582ec;
-}
-input:checked + .switch:after {
-	left: 46px;
-}
-
-
-
-
-
-
-
-/* #Forms
-================================================== */
-
-form .help-block,
-form .error-block,
-form .parsley-help-block {
-	display: block;
-	margin-top:8px;
-	font-style: italic;
-}
-
-form .error-block,
-form .parsley-help-block {
-	color: $brand-danger;
-}
-
-form .input-group .form-control {
-
-}
-
-// Bootstrap Overrides
-//
-// Navbar =====================================================================
-
-.navbar {
-	background: $page-light;
-	border: none;
-
-	&-nav,
-	&-form {
-		margin:8px 0;
-	}
-
-	&-nav > li > a {
-		padding: 6px 10px;
-		margin:0 4px;
-		border: 1px solid transparent;
-		border-radius: 4px;
-
-		&:hover {
-			border: 1px solid #ddd;
-		}
-
-		i + span {
-			display: inline-block;
-			margin-left:8px;
-		}
-	}
-
-	&-nav > li.primary > a:hover,
-	&-nav > li.primary > a:focus {
-		color: $brand-primary;
-		background-color:transparent;
-		border-color:$brand-primary;
-	}
-
-	&-brand {
-		padding-top: 16px;
-
-		small {
-			font-weight: 300;
-		}
-	}
-
-	&-cancel {
-		max-width: 100px;
-	}
-
-}
