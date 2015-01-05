@@ -451,6 +451,15 @@ label .popover-content {
 				}
 			}
 		}
+
+		.item .item {
+			&.active {
+
+				a {
+					padding: 8px 0 8px 28px;
+				}
+			}
+		}
 	}
 }
 
