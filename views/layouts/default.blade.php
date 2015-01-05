@@ -18,20 +18,21 @@
 	<meta name="base_url" content="{{ url('/') }}">
 	<meta name="csrf-token" content="{{ csrf_token() }}">
 
+	<script src="{{ Asset::getUrl('pace/js/pace.min.js') }}"></script>
+
 	{{-- Queue assets --}}
 	{{ Asset::queue('bootstrap', 'bootstrap/css/bootstrap.min.css') }}
 	{{ Asset::queue('font-awesome', 'font-awesome/css/font-awesome.min.css') }}
-	{{ Asset::queue('metisMenu', 'onokumus/css/metisMenu.min.css') }}
+	{{ Asset::queue('metis-menu', 'metis-menu/css/metisMenu.min.css') }}
 	{{ Asset::queue('perfect-scrollbar', 'perfect-scrollbar/css/perfect-scrollbar.css') }}
 	{{ Asset::queue('style', 'platform/scss/style.scss') }}
 
-	{{ Asset::queue('modernizr', 'modernizr/js/modernizr.js') }}
+	{{ Asset::queue('modernizr', 'modernizr/js/modernizr.js', 'pace') }}
 	{{ Asset::queue('jquery', 'jquery/js/jquery.js', 'modernizr') }}
-	{{ Asset::queue('pace', 'hubspot/js/pace.min.js', 'jquery') }}
 	{{ Asset::queue('bootstrap', 'bootstrap/js/bootstrap.min.js', 'jquery') }}
-	{{ Asset::queue('perfect-scrollbar', 'perfect-scrollbar/js/perferct-scrollbar.min.js', 'jquery') }}
-	{{ Asset::queue('metisMenu', 'onokumus/js/metisMenu.min.js', 'jquery') }}
-	{{ Asset::queue('platform', 'platform/js/platform.js', 'metisMenu') }}
+	{{ Asset::queue('perfect-scrollbar', 'perfect-scrollbar/js/perferct-scrollbar.min.js', 'bootstrap') }}
+	{{ Asset::queue('metis-menu', 'metis-menu/js/metisMenu.min.js', 'perfect-scrollbar') }}
+	{{ Asset::queue('platform', 'platform/js/platform.js', 'metis-menu') }}
 
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 		<!--[if lt IE 9]>
@@ -74,9 +75,9 @@
 					@include('partials/header')
 				</header>
 
-				{{-- Page Content--}}
+				{{-- Page --}}
 				<div class="page__content container-fluid">
-					@yield('content')
+					@yield('page')
 				</div>
 
 			</main>
