@@ -29,7 +29,7 @@
 	{{ Asset::queue('modernizr', 'modernizr/js/modernizr.js', 'pace') }}
 	{{ Asset::queue('jquery', 'jquery/js/jquery.js', 'modernizr') }}
 	{{ Asset::queue('bootstrap', 'bootstrap/js/bootstrap.min.js', 'jquery') }}
-	{{ Asset::queue('perfect-scrollbar', 'perfect-scrollbar/js/perferct-scrollbar.min.js', 'bootstrap') }}
+	{{ Asset::queue('perfect-scrollbar', 'perfect-scrollbar/js/perfect-scrollbar.min.js', 'bootstrap') }}
 	{{ Asset::queue('metis-menu', 'metis-menu/js/metisMenu.min.js', 'perfect-scrollbar') }}
 	{{ Asset::queue('platform', 'platform/js/platform.js', 'metis-menu') }}
 
