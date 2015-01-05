@@ -190,7 +190,7 @@ label .popover-content {
 	margin-left: 0;
 	width: 240px;
 	transition: all .4s ease 0s;
-	z-index: 10000;
+	z-index: 1000;
 	overflow: hidden;
 	background: $sidebar;
 	color: $text;
@@ -493,7 +493,7 @@ label .popover-content {
 .pace .pace-progress {
 	background: $brand-primary;
 	position: fixed;
-	z-index: 12000;
+	z-index: 1100;
 	top: 0;
 	right: 100%;
 	width: 240px;

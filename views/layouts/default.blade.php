@@ -18,8 +18,6 @@
 	<meta name="base_url" content="{{ url('/') }}">
 	<meta name="csrf-token" content="{{ csrf_token() }}">
 
-	<script src="{{ Asset::getUrl('pace/js/pace.min.js') }}"></script>
-
 	{{-- Queue assets --}}
 	{{ Asset::queue('bootstrap', 'bootstrap/css/bootstrap.min.css') }}
 	{{ Asset::queue('font-awesome', 'font-awesome/css/font-awesome.min.css') }}
@@ -27,6 +25,7 @@
 	{{ Asset::queue('perfect-scrollbar', 'perfect-scrollbar/css/perfect-scrollbar.css') }}
 	{{ Asset::queue('style', 'platform/scss/style.scss') }}
 
+	{{ Asset::queue('pace', 'pace/js/pace.min.js') }}
 	{{ Asset::queue('modernizr', 'modernizr/js/modernizr.js', 'pace') }}
 	{{ Asset::queue('jquery', 'jquery/js/jquery.js', 'modernizr') }}
 	{{ Asset::queue('bootstrap', 'bootstrap/js/bootstrap.min.js', 'jquery') }}
