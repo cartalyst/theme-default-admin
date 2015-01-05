@@ -19,7 +19,7 @@
 
 	<div class="sidebar__copyright">
 
-		@content('company-copyright')
+		@setting('platform.site.copyright')
 
 	</div>
 
