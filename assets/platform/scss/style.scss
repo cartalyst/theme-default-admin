@@ -51,7 +51,6 @@ $brand-warning:					#f0ad4e;
 $brand-danger:					#d9534f;
 
 // General ====================================================================
-
 *, *:before, *:after {
 	box-sizing: border-box;
 }
@@ -64,7 +63,6 @@ body {
 }
 
 // Bootstrap Overrides ========================================================
-
 .navbar {
 	background: $page-light;
 	border: none;
@@ -139,9 +137,7 @@ body {
 	box-shadow: none;
 }
 
-/* #Forms
-================================================== */
-
+// Forms ======================================================================
 form .help-block,
 form .error-block,
 form .parsley-help-block {
@@ -502,7 +498,6 @@ label .popover-content {
 
 /* Data Grid
 ================================================== */
-
 #data-grid {
 
 	thead th {
@@ -545,7 +540,6 @@ label .popover-content {
 
 /* Not Sure
 ================================================== */
-
 .btn-file {
 	position: relative;
 	overflow: hidden;
@@ -566,4 +560,33 @@ label .popover-content {
 		display: block;
 	}
 }
+
+// Responsive =================================================================
+
+@media (max-width:767px) {
+
+.base {
+
+	padding-left:0px;
+
+	.sidebar {
+		left:-248px;
+	}
+
+	&.base--collapse {
+		padding-left:240px;
+	}
+
+	&.base--collapse .sidebar {
+		left:0;
+
+		.navigation--sidebar {
+			visibility:visible;
+		}
+	}
+}
+
+
+}
+
 
