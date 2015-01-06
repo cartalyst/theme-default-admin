@@ -10,7 +10,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 	<title>
 		@section('title')
-			@setting('platform.site.title')
+			@setting('platform.app.title')
 		@show
 	</title>
 	<meta name="description" content="@yield('meta-description')">

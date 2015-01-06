@@ -5,7 +5,7 @@
 		<figure>
 			<a href="{{ url()->toAdmin('/') }}">
 				<img src="{{ Asset::getUrl('platform/img/ornery-octopus.svg') }}" alt="Profile Image">
-				<figcaption>@setting('platform.site.title')<span>@setting('platform/foundation::release_name')</span></figcaption>
+				<figcaption>@setting('platform.app.title')<span>@setting('platform/foundation::release_name')</span></figcaption>
 			</a>
 		</figure>
 
@@ -19,7 +19,7 @@
 
 	<div class="sidebar__copyright">
 
-		@setting('platform.site.copyright')
+		@setting('platform.app.copyright')
 
 	</div>
 
