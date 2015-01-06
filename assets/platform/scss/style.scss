@@ -110,7 +110,7 @@ body {
 }
 
 .dropdown-menu li:hover {
-    cursor: pointer;
+	cursor: pointer;
 }
 
 .tab-content {
@@ -328,6 +328,10 @@ label .popover-content {
 
 		}
 
+		.panel-heading {
+				border-bottom:none;
+		}
+
 		.panel-body {
 			margin:0;
 			padding:0;
@@ -337,6 +341,20 @@ label .popover-content {
 			}
 		}
 	}
+
+	&.panel-help {
+
+		.panel-heading,
+		.panel-body,
+		.panel-footer {
+			border:none;
+		}
+
+		.panel-body {
+			padding:16px 32px;
+		}
+	}
+
 }
 
 // Navigation =================================================================
@@ -567,26 +585,26 @@ label .popover-content {
 
 @media (max-width:767px) {
 
-.base {
+	.base {
 
-	padding-left:0px;
+		padding-left:0px;
 
-	.sidebar {
-		left:-248px;
-	}
+		.sidebar {
+			left:-248px;
+		}
 
-	&.base--collapse {
-		padding-left:240px;
-	}
+		&.base--collapse {
+			padding-left:240px;
+		}
 
-	&.base--collapse .sidebar {
-		left:0;
+		&.base--collapse .sidebar {
+			left:0;
 
-		.navigation--sidebar {
-			visibility:visible;
+			.navigation--sidebar {
+				visibility:visible;
+			}
 		}
 	}
-}
 
 
 }
