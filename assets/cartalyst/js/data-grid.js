@@ -1412,7 +1412,7 @@
 				var terms_count = route_array[i].match(/:/g).length;
 				var label;
 
-				if ( ! $filter.length && terms_count === 2 && filter.length !== 3)
+				if ( ! $filter.length && terms_count === 2 && filter.length === 3)
 				{
 					// Range filters
 					var $start_filter = this.$body.find('[data-range-start][data-range-filter="' + filter[0] + '"]' + grid + ',' + grid + ' [data-range-start][data-range-filter="' + filter[0] + '"]');
