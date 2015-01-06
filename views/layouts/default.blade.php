@@ -10,7 +10,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 	<title>
 		@section('title')
-		@setting('platform.site.title')
+			@setting('platform.site.title')
 		@show
 	</title>
 	<meta name="description" content="@yield('meta-description')">
@@ -34,66 +34,67 @@
 	{{ Asset::queue('platform', 'platform/js/platform.js', 'metis-menu') }}
 
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-		<!--[if lt IE 9]>
-		<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-		<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-		<![endif]-->
+	<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
 
-		<link rel="shortcut icon" href="{{ Asset::getUrl('platform/img/favicon.png') }}">
+	<link rel="shortcut icon" href="{{ Asset::getUrl('platform/img/favicon.png') }}">
 
-		{{-- Compiled styles --}}
-		@foreach (Asset::getCompiledStyles() as $style)
-		<link href="{{ $style }}" rel="stylesheet">
-		@endforeach
+	{{-- Compiled styles --}}
+	@foreach (Asset::getCompiledStyles() as $style)
+	<link href="{{ $style }}" rel="stylesheet">
+	@endforeach
 
-		{{-- Call custom inline styles --}}
-		@section('styles')
-		@show
+	{{-- Call custom inline styles --}}
+	@section('styles')
+	@show
 
-	</head>
+</head>
 
-	<body>
+<body>
 
-		<!--[if lt IE 7]>
-		<p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
-		<![endif]-->
+	<!--[if lt IE 7]>
+	<p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
+	<![endif]-->
 
-		<section class="base">
+	<section class="base">
 
-			{{-- Sidebar --}}
-			@include('partials/sidebar')
+		{{-- Sidebar --}}
+		@include('partials/sidebar')
+
+		{{-- Page --}}
+		<main class="page">
+
+			{{-- Alerts --}}
+			@include('partials/alerts')
+
+			{{-- Page Header --}}
+			<header class="page__header container-fluid clearfix">
+				@include('partials/header')
+			</header>
 
 			{{-- Page --}}
-			<main class="page">
+			<div class="page__content container-fluid">
+				@yield('page')
+			</div>
 
-				{{-- Alerts --}}
-				@include('partials/alerts')
+		</main>
 
-				{{-- Page Header --}}
-				<header class="page__header container-fluid clearfix">
-					@include('partials/header')
-				</header>
+	</section>
 
-				{{-- Page --}}
-				<div class="page__content container-fluid">
-					@yield('page')
-				</div>
+	{{-- Modals --}}
+	@include('partials/modals')
 
-			</main>
+	{{-- Compiled scripts --}}
+	@foreach (Asset::getCompiledScripts() as $script)
+	<script src="{{ $script }}"></script>
+	@endforeach
 
-		</section>
+	{{-- Call custom inline scripts --}}
+	@section('scripts')
+	@show
 
-		{{-- Modals --}}
-		@include('partials/modals')
+</body>
 
-		{{-- Compiled scripts --}}
-		@foreach (Asset::getCompiledScripts() as $script)
-		<script src="{{ $script }}"></script>
-		@endforeach
-
-		{{-- Call custom inline scripts --}}
-		@section('scripts')
-		@show
-
-	</body>
-	</html>
+</html>
