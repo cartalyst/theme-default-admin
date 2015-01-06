@@ -348,10 +348,19 @@ label .popover-content {
 		.panel-body,
 		.panel-footer {
 			border:none;
+			color: $text;
 		}
 
 		.panel-body {
 			padding:16px 32px;
+			font-size:1.1em;
+			font-weight: normal;
+		}
+
+		.panel-title {
+			span {
+				cursor: pointer;
+			}
 		}
 	}
 
