@@ -114,7 +114,7 @@
 		default_hash = grid;
 
 		// Setup Base Throttle
-		self.pagination.base_throttle = self.opt.throttle;
+		self.pagination.base_throttle = this.opt.throttle ? this.opt.throttle : defaults.throttle;
 
 		// Check our dependencies
 		self.checkDependencies();
@@ -1740,7 +1740,7 @@
 		 */
 		buildThrottleFragment: function()
 		{
-			if (defaults.throttle !== this.opt.throttle)
+			if (defaults.throttle !== this.opt.throttle && this.opt.throttle)
 			{
 				return 'throttle' + this.opt.delimiter + this.opt.throttle + '/';
 			}
@@ -1755,7 +1755,7 @@
 		 */
 		buildThresholdFragment: function()
 		{
-			if (defaults.threshold !== this.opt.threshold)
+			if (defaults.threshold !== this.opt.threshold && this.opt.threshold)
 			{
 				return 'threshold' + this.opt.delimiter + this.opt.threshold + '/';
 			}
@@ -1790,7 +1790,12 @@
 
 				if ( ! self.opt.throttle)
 				{
-					self.opt.throttle = response.per_page;
+					defaults.throttle = response.throttle;
+				}
+
+				if ( ! self.opt.threshold)
+				{
+					defaults.threshold = response.threshold;
 				}
 
 				if (self.pagination.page_index > response.pages)
@@ -1887,12 +1892,12 @@
 
 			if (this.opt.threshold)
 			{
-				params.threshold = this.opt.threshold;
+				params.threshold = this.opt.threshold ? this.opt.threshold : defaults.threshold;
 			}
 
 			if (this.opt.throttle)
 			{
-				params.throttle = this.opt.throttle;
+				params.throttle = this.opt.throttle ? this.opt.throttle : defaults.throttle;
 			}
 
 			var filters = [];
@@ -2131,8 +2136,8 @@
 				pages: total,
 				total: this.pagination.total,
 				filtered: this.pagination.filtered,
-				throttle: this.opt.throttle,
-				threshold: this.opt.threshold,
+				throttle: this.opt.throttle ? this.opt.throttle : defaults.throttle,
+				threshold: this.opt.threshold ? this.opt.threshold : defaults.threshold,
 				per_page: per_page
 			};
 
@@ -2182,11 +2187,11 @@
 				case 'single':
 				case 'infinite':
 
-					return this.opt.throttle;
+					return this.opt.throttle ? this.opt.throttle : defaults.throttle;
 
 				case 'group':
 
-					return Math.ceil(this.pagination.filtered / this.opt.throttle);
+					return Math.ceil(this.pagination.filtered / (this.opt.throttle ? this.opt.throttle : defaults.throttle));
 			}
 		},
 
