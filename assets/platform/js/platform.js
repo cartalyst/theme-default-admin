@@ -93,17 +93,17 @@ var Platform;
 		// Get the modal target
 		var target = target ? target : $(this).data('target');
 
-		if ( ! callback)
-		{
-			callback = function()
-			{
-				$('#modal-confirm').modal('hide');
-			};
-		}
-
 		// Is this modal target a confirmation?
 		if (target === 'modal-confirm')
 		{
+			if ( ! callback)
+			{
+				callback = function()
+				{
+					$('#modal-confirm').modal('hide');
+				};
+			}
+
 			$('#modal-confirm .confirm')
 				.attr('href', $(this).attr('href'))
 				.on('click', callback)

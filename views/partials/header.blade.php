@@ -14,7 +14,7 @@
 
 <nav class="navigation navigation--header pull-right">
 
-	@widget('platform/menus::nav.show', array('system', 0, 'nav nav-pills', '', 'partials/navigation/system'))
+	@widget('platform/menus::nav.show', [ 'system', 0, 'nav nav-pills', '', 'partials/navigation/system' ])
 
 </nav>
 
@@ -26,9 +26,9 @@
 			<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-user visible-xs-inline"></i> <span class="hidden-xs">{{ $currentUser->email }}</span> <span class="caret"></span></a>
 
 			<ul class="dropdown-menu" role="menu">
-				<li><a href="{{ URL::toAdmin("users/{$currentUser->id}") }}">Profile</a></li>
+				<li><a href="{{ url()->toAdmin("users/{$currentUser->id}") }}">Profile</a></li>
 				<li class="divider"></li>
-				<li><a href="{{ URL::to('/logout') }}">Sign Out</a></li>
+				<li><a href="{{ url()->to('/logout') }}">Sign Out</a></li>
 			</ul>
 
 		</li>
