@@ -329,7 +329,7 @@ label .popover-content {
 		}
 
 		.panel-heading {
-				border-bottom:none;
+			border-bottom:none;
 		}
 
 		.panel-body {
@@ -354,6 +354,15 @@ label .popover-content {
 			color: $text;
 		}
 
+		.panel-heading .panel-close:after {
+			font-family: 'FontAwesome';
+			content: "\f204";
+			float: right;
+		}
+		.panel-heading .panel-close.collapsed:after {
+			content: "\f205";
+		}
+
 		.panel-body {
 			padding:16px 32px;
 
@@ -376,6 +385,11 @@ label .popover-content {
 			span {
 				cursor: pointer;
 			}
+		}
+
+		.panel-close {
+			display: inline-block;
+			padding: 0 8px;
 		}
 	}
 
