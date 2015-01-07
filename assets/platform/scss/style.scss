@@ -386,6 +386,55 @@ label .popover-content {
 		}
 	}
 
+	&.panel-permissions {
+
+		.panel-heading,
+		.panel-body,
+		.panel-footer {
+			border:none;
+		}
+
+		.panel-heading {
+			color: $text;
+			cursor: pointer;
+
+			h4 {
+				padding:4px 8px;
+			}
+		}
+
+		.panel-heading .panel-close:after {
+			font-family: 'FontAwesome';
+			content: "\f205";
+			float: right;
+		}
+		.panel-heading.collapsed .panel-close:after {
+			content: "\f204";
+		}
+
+		.panel-body {
+			padding:16px 32px;
+
+			.permission {
+
+				padding:6px 0 4px 0;
+
+			}
+
+		}
+
+		.panel-title {
+			span {
+				cursor: pointer;
+			}
+		}
+
+		.panel-close {
+			display: inline-block;
+			padding: 0 8px;
+		}
+	}
+
 }
 
 // Help =======================================================================
