@@ -352,6 +352,13 @@ label .popover-content {
 
 		.panel-heading {
 			color: $text;
+
+			.manual {
+				display: inline-block;
+				padding-right:10px;
+				border-right:1px solid $border;
+				cursor: pointer;
+			}
 		}
 
 		.panel-heading .panel-close:after {
@@ -365,20 +372,6 @@ label .popover-content {
 
 		.panel-body {
 			padding:16px 32px;
-
-			p {
-				font-weight: normal;
-				line-height: 2em;
-				padding:0;
-				margin:0;
-			}
-
-			code {
-				border:1px solid $border;
-				color:$text;
-				background-color:$page;
-				padding:2px;
-			}
 		}
 
 		.panel-title {
@@ -391,6 +384,28 @@ label .popover-content {
 			display: inline-block;
 			padding: 0 8px;
 		}
+	}
+
+}
+
+// Help =======================================================================
+.help {
+
+	h3 {
+		padding-bottom:16px;
+	}
+
+	p:first-of-type {
+		font-size:1.5em;
+		line-height: 1.6em;
+		font-weight: 300;
+	}
+
+
+	p {
+		padding-bottom:16px;
+		font-size: 1.1em;
+		line-height: 1.3em;
 	}
 
 }
