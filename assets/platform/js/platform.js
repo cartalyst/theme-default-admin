@@ -123,15 +123,17 @@ var Platform;
 	{
 		event.preventDefault();
 
+		var form = $(this).parents('form:first');
+
+		var href = $(this).attr('href');
+
 		Platform.App.modals(event, 'modal-confirm', function()
 		{
-			var $form = $(this).parents('form:first');
-
-			$form.attr('action', $(this).attr('href'));
+			form.attr('action', href);
 
 			$('#modal-confirm').modal('hide');
 
-			$form.append('<input type="hidden" name="_method" value="delete">').submit();
+			form.append('<input type="hidden" name="_method" value="delete">').submit();
 		});
 	}
 
