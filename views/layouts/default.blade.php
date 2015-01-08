@@ -20,10 +20,10 @@
 
 	{{-- Queue assets --}}
 	{{ Asset::queue('bootstrap', 'bootstrap/css/bootstrap.min.css') }}
-	{{ Asset::queue('font-awesome', 'font-awesome/css/font-awesome.min.css') }}
-	{{ Asset::queue('metis-menu', 'metis-menu/css/metisMenu.min.css') }}
-	{{ Asset::queue('perfect-scrollbar', 'perfect-scrollbar/css/perfect-scrollbar.css') }}
-	{{ Asset::queue('style', 'platform/scss/style.scss') }}
+	{{ Asset::queue('font-awesome', 'font-awesome/css/font-awesome.min.css', 'bootstrap') }}
+	{{ Asset::queue('metis-menu', 'metis-menu/css/metisMenu.min.css', 'font-awesome') }}
+	{{ Asset::queue('perfect-scrollbar', 'perfect-scrollbar/css/perfect-scrollbar.css', 'metis-menu') }}
+	{{ Asset::queue('style', 'platform/scss/style.scss', 'perfect-scrollbar') }}
 
 	{{ Asset::queue('pace', 'pace/js/pace.min.js') }}
 	{{ Asset::queue('modernizr', 'modernizr/js/modernizr.js', 'pace') }}
