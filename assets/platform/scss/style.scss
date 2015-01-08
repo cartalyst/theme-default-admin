@@ -151,10 +151,25 @@ form .parsley-help-block {
 	color: $brand-danger;
 }
 
-label .popover-content {
+form fieldset {
+	margin-bottom:16px;
+}
+
+form fieldset legend {
+	padding:8px 0;
+}
+
+form .form-group {
+	border-bottom: 1px dashed lighten($border, 5%);
+	padding-bottom:4px;
+}
+
+form label .popover-content {
 	font-weight: normal;
 	width: 276px;
+
 }
+
 
 // Base =======================================================================
 .base {
