@@ -1,11 +1,11 @@
-<div class="modal fade" id="modal-confirm" tabindex="-1" role="dialog" aria-labelledby="model-confirm-label" aria-hidden="true">
+<div class="modal fade" id="modal-notice" tabindex="-1" role="dialog" aria-labelledby="model-notice-label" aria-hidden="true">
 
 	<div class="modal-dialog">
 
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-				<h4 class="modal-title">{{{ trans('common.error') }}}</h4>
+				<h4 class="modal-title">{{{ trans('common.notice') }}}</h4>
 			</div>
 
 			<div class="modal-body">

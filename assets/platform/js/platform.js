@@ -196,6 +196,25 @@ var Platform;
 		// Get the modal target
 		var target = target ? target : $(this).data('target');
 
+		// Is this modal target a notice?
+		if (target === 'modal-notice')
+		{
+			if ( ! callback)
+			{
+				callback = function()
+				{
+					$('#modal-notice').modal('hide');
+				};
+			}
+
+			$('#modal-notice').modal({
+				show: true,
+				remote: false,
+			});
+
+			return false;
+		}
+
 		// Is this modal target a confirmation?
 		if (target === 'modal-confirm')
 		{
