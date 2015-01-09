@@ -76,19 +76,6 @@ var Platform;
 		return this;
 	};
 
-	// Slugify
-	Platform.App.slugify = function()
-	{
-		if (String.prototype.slugify)
-		{
-			var input = $(this).data('slugify');
-
-			var slug = $(this).val().slugify();
-
-			$(input).val(slug);
-		}
-	};
-
 	// Initialize Menu: https://github.com/onokumus/metisMenu
 	Platform.App.menu = function()
 	{
@@ -259,6 +246,19 @@ var Platform;
 		event.preventDefault();
 
 		$('.base').toggleClass('base--collapse');
+	};
+
+	// Slugify
+	Platform.App.slugify = function()
+	{
+		if (String.prototype.slugify)
+		{
+			var input = $(this).data('slugify');
+
+			var slug = $(this).val().slugify();
+
+			$(input).val(slug);
+		}
 	};
 
 	// Job done, lets run
