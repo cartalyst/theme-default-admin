@@ -271,11 +271,10 @@ form label .popover-content {
 
 	&.panel-default {
 
-		.panel-heading,
-		.panel-footer {
+		.panel-heading {
 			background: $panel;
-			padding-right: 15px;
-			padding-left: 15px;
+			padding-right: 0;
+			padding-left: 0;
 			margin-right: auto;
 			margin-left: auto;
 		}
@@ -289,6 +288,10 @@ form label .popover-content {
 
 			.navbar-form {
 				margin-right:-30px;
+			}
+
+			.navbar-btn {
+				margin:0;
 			}
 		}
 
@@ -315,11 +318,6 @@ form label .popover-content {
 
 		.panel-heading,
 		.panel-footer {
-			background: $panel;
-			padding-right: 0;
-			padding-left: 0;
-			margin-right: auto;
-			margin-left: auto;
 
 			.navbar {
 				margin-bottom:0;
@@ -352,9 +350,22 @@ form label .popover-content {
 			padding:0;
 
 			.nav-tabs li:first-child {
-				padding-left:16px;
+				padding-left:15px;
 			}
 		}
+	}
+
+	&.panel-grid {
+
+		.panel-heading {
+			border-bottom:none;
+		}
+
+		.panel-body {
+			margin:0;
+			padding:0;
+		}
+
 	}
 
 	&.panel-help {
@@ -363,6 +374,8 @@ form label .popover-content {
 		.panel-body,
 		.panel-footer {
 			border:none;
+			padding-left:15px;
+			padding-right:15px;
 		}
 
 		.panel-heading {
@@ -402,16 +415,20 @@ form label .popover-content {
 	}
 
 	&.panel-permissions {
+		margin:6px 0;
 
 		.panel-heading,
 		.panel-body,
 		.panel-footer {
 			border:none;
+			padding-left:15px;
+			padding-right:15px;
 		}
 
 		.panel-heading {
 			color: $text;
 			cursor: pointer;
+			background: #f7f7f7;
 
 			h4 {
 				padding:4px 8px;
