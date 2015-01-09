@@ -67,12 +67,26 @@ var Platform;
 		;
 
 		Platform.Cache.$body
+			.on('keyup', '[data-slugify]', Platform.App.slugify)
 			.on('click', '.toggle-sidebar', Platform.App.sidebarToggle)
 			.on('click', '[data-action-delete]', Platform.App.deletion)
 			.on('click', '[data-modal], [data-toggle="modal"]', Platform.App.modals)
 		;
 
 		return this;
+	};
+
+	// Slugify
+	Platform.App.slugify = function()
+	{
+		if (String.prototype.slugify)
+		{
+			var input = $(this).data('slugify');
+
+			var slug = $(this).val().slugify();
+
+			$(input).val(slug);
+		}
 	};
 
 	// Initialize Menu: https://github.com/onokumus/metisMenu
