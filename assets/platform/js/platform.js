@@ -189,7 +189,7 @@ var Platform;
 	};
 
 	// Handle Bootstrap Modals
-	Platform.App.modals = function(event, target, callback)
+	Platform.App.modals = function(event, message, target, callback)
 	{
 		event.preventDefault();
 
@@ -206,6 +206,8 @@ var Platform;
 					$('#modal-notice').modal('hide');
 				};
 			}
+
+			$('#modal-notice .lead').text(message);
 
 			$('#modal-notice').modal({
 				show: true,
@@ -249,7 +251,7 @@ var Platform;
 
 		var href = $(this).attr('href');
 
-		Platform.App.modals(event, 'modal-confirm', function()
+		Platform.App.modals(event, null, 'modal-confirm', function()
 		{
 			form.attr('action', href);
 
