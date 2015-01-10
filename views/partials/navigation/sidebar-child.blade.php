@@ -1,4 +1,4 @@
-<li class="item {{ $child->isActive ? 'active' : null }}">
+<li class="item {{ $child->isActive ? 'active' : null }} {{ $child->children ? 'off' : null }}">
 	<a target="{{ $child->target }}" href="{{ $child->uri }}" role="button">
 		<i class="{{ $child->class }}"></i>
 		<span>{{ $child->name }}</span>

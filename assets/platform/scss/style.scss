@@ -104,7 +104,7 @@ body {
 	}
 
 	&-cancel {
-		max-width: 100px;
+		float:left;
 	}
 
 }
@@ -592,24 +592,23 @@ form label .popover-content {
 				background-color: $sidebar-light;
 				border-left:4px solid $brand-primary;
 
-				a {
-					margin-left:-4px;
-				}
-
-				a:hover {
-					border-left:0;
-				}
-			}
-		}
-
-		.item .item {
-			&.active {
-
-				a {
+				> a {
 					padding: 8px 0 8px 28px;
 				}
 			}
+
+			&.active.off {
+				background-color: $sidebar-light;
+				border-left:0;
+				margin-left:0;
+
+				> a {
+					padding: 8px 0 8px 16px;
+				}
+			}
+
 		}
+
 	}
 }
 
