@@ -63,6 +63,18 @@ body {
 }
 
 // Bootstrap Overrides ========================================================
+
+.modal {
+
+	&-body {
+		padding:32px 16px;
+	}
+
+	&-footer {
+		text-align: center;
+	}
+}
+
 .navbar {
 	background: $page-light;
 	border: none;

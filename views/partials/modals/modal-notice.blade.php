@@ -3,14 +3,14 @@
 	<div class="modal-dialog">
 
 		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-				<h4 class="modal-title">{{{ trans('common.notice') }}}</h4>
-			</div>
 
-			<div class="modal-body">
+			<div class="modal-body text-center">
 
-				<p class="lead text-center"></p>
+				<i class="fa fa-exclamation fa-5x"></i>
+
+				<h4>{{{ trans('common.warning') }}}</h4>
+
+				<p class="lead"></p>
 
 			</div>
 
