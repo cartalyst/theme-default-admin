@@ -1,10 +1,12 @@
-<li class="item {{ $child->isActive ? 'active' : null }} {{ $child->children ? 'off' : null }}">
+<li class="item {{ $child->isActive ? 'selected' : null }} {{ $child->children ? 'dropdown' : null }}">
 	<a target="{{ $child->target }}" href="{{ $child->uri }}" role="button">
 		<i class="{{ $child->class }}"></i>
 		<span>{{ $child->name }}</span>
-		@if ($child->children and ! $child->hasSubItems)
-		<i class="fa fa-caret-down"></i>
+
+		@if ($child->children)
+		<span class="fa-item-icon"></span>
 		@endif
+
 	</a>
 
 	@if ($child->children)
