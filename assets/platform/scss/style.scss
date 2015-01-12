@@ -605,7 +605,7 @@ form label .popover-content {
 
 		.item {
 
-			&.selected:not(.dropdown) {
+			&.active:not(.dropdown) {
 				border-bottom:4px solid $brand-primary;
 				a {
 					color:$brand-primary;
