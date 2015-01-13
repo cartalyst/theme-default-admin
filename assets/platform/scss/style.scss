@@ -84,6 +84,10 @@ body {
 		margin:8px 0;
 	}
 
+	&-nav > li > button {
+		margin-top:0;
+	}
+
 	&-nav > li > a {
 		padding: 6px 10px;
 		margin:0 4px;
@@ -114,11 +118,6 @@ body {
 			font-weight: 300;
 		}
 	}
-
-	&-cancel {
-		float:left;
-	}
-
 }
 
 .dropdown-menu li:hover {
@@ -279,10 +278,6 @@ form label .popover-content {
 
 		.panel-heading {
 			background: $panel;
-			padding-right: 0;
-			padding-left: 0;
-			margin-right: auto;
-			margin-left: auto;
 		}
 
 		.panel-heading {
@@ -296,13 +291,19 @@ form label .popover-content {
 				margin-right:-30px;
 			}
 
-			.navbar-btn {
-				margin:0;
+			.btn-navbar-cancel {
+				background-color: transparent;
+				border-color: transparent;
+				margin-top:8px;
+				margin-right:8px;
 			}
-		}
-
-		.panel-body {
-
+			.btn-navbar-cancel:hover,
+			.btn-navbar-cancel:focus,
+			.btn-navbar-cancel:active,
+			.btn-navbar-cancel.active {
+				background-color: transparent;
+				border-color: $border;
+			}
 		}
 
 		.panel-footer {
@@ -325,16 +326,17 @@ form label .popover-content {
 		.panel-heading,
 		.panel-footer {
 
+			.container-fluid {
+				padding-left:0;
+				padding-right:0;
+			}
+
 			.navbar {
 				margin-bottom:0;
 			}
 
 			.navbar-right {
 				margin-right:-15px;
-			}
-
-			.navbar-btn {
-				margin:0;
 			}
 
 			.nav-tabs{
@@ -386,13 +388,6 @@ form label .popover-content {
 
 		.panel-heading {
 			color: $text;
-
-			.manual {
-				display: inline-block;
-				padding-right:10px;
-				border-right:1px solid $border;
-				cursor: pointer;
-			}
 		}
 
 		.panel-heading .panel-close:after {
@@ -400,12 +395,18 @@ form label .popover-content {
 			content: "\f205";
 			float: right;
 		}
-		.panel-heading .panel-close.collapsed:after {
+		.panel-heading.collapsed .panel-close:after {
 			content: "\f204";
 		}
 
 		.panel-body {
 			padding:16px 32px;
+
+			.manual {
+				display: inline-block;
+				padding-left:8px;
+			}
+
 		}
 
 		.panel-title {
