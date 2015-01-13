@@ -365,13 +365,20 @@ form label .popover-content {
 
 	&.panel-grid {
 
-		.panel-heading {
-			border-bottom:none;
+		.panel-body {
+			margin:-1px;
+			padding:0 4px;
+
+			border-bottom:1px solid $border;
+
+			.btn {
+				margin:6px 0;
+			}
+
 		}
 
-		.panel-body {
-			margin:0;
-			padding:0;
+		.table-responsive {
+			border-top:none;
 		}
 
 	}
