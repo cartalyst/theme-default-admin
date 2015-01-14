@@ -120,6 +120,13 @@ body {
 	}
 }
 
+.nav {
+
+	&-tabs {
+		margin-bottom: 0;
+	}
+}
+
 .dropdown-menu li:hover {
 	cursor: pointer;
 }
@@ -134,12 +141,15 @@ body {
 	border-top: none;
 }
 
-.nav-tabs {
-	margin-bottom: 0;
-}
-
 [data-toggle="popover"], [data-toggle="tooltip"] {
 	cursor: pointer;
+}
+
+code {
+	padding:8px;
+	color:$text;
+	background:#f7f7f7;
+	border:1px solid $border;
 }
 
 // Forms ======================================================================
