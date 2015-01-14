@@ -253,6 +253,8 @@ var Platform;
 
 		Platform.App.modals(event, null, 'modal-confirm', function()
 		{
+			form.parsley().destroy();
+
 			form.attr('action', href);
 
 			$('#modal-confirm').modal('hide');
