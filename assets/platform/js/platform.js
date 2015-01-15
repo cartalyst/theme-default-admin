@@ -131,9 +131,7 @@ var Platform;
 	// Initialize Bootstrap Tooltips
 	Platform.App.tooltips = function()
 	{
-		$('.tip, .tooltip, [data-tooltip], [data-toggle="tooltip"]').tooltip({
-			container: 'body',
-		});
+		Platform.Cache.$body.tooltip({ selector: '.tip, .tooltip, [data-tooltip], [data-toggle="tooltip"]', container: 'body' });
 
 		return this;
 	};
