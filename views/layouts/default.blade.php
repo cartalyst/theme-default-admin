@@ -68,7 +68,7 @@
 		{{-- Page --}}
 		<main class="page">
 
-			<div class="cover"></div>
+			<div class="cover"><i class="fa fa-refresh fa-spin"></i></div>
 
 			{{-- Alerts --}}
 			@include('partials/alerts')
