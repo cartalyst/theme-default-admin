@@ -58,6 +58,8 @@
 	<p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
 	<![endif]-->
 
+
+
 	<section class="base">
 
 		{{-- Sidebar --}}
@@ -65,6 +67,8 @@
 
 		{{-- Page --}}
 		<main class="page">
+
+			<div class="cover"></div>
 
 			{{-- Alerts --}}
 			@include('partials/alerts')

@@ -92,6 +92,10 @@ var Platform;
 			restartOnPushState: false,
 		};
 
+		Pace.on("done", function(){
+			$(".cover").fadeOut(150);
+		});
+
 		return this;
 	};
 
