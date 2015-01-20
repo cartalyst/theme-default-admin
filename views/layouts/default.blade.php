@@ -68,7 +68,7 @@
 		{{-- Page --}}
 		<main class="page">
 
-			<div class="cover"><i class="fa fa-refresh fa-spin"></i></div>
+			<div class="cover"><span>{{{ trans('message.loading') }}} <i class="fa fa-refresh fa-spin"></i></span></div>
 
 			{{-- Alerts --}}
 			@include('partials/alerts')
