@@ -13,7 +13,7 @@
 
 	<nav class="navigation navigation--sidebar">
 
-		@widget('platform/menus::nav.show', [ 'admin', 0, 'menu menu--sidebar', admin_uri(), 'partials/navigation/sidebar' ])
+		@nav('admin', 0, 'menu menu--sidebar', admin_uri(), 'partials/navigation/sidebar')
 
 	</nav>
 
