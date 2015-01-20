@@ -14,7 +14,7 @@
 
 <nav class="navigation navigation--header pull-right">
 
-	@widget('platform/menus::nav.show', [ 'system', 0, 'nav nav-pills', '', 'partials/navigation/system' ])
+	@nav('system', 0, 'nav nav-pills', '', 'partials/navigation/system')
 
 </nav>
 
