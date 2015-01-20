@@ -50,7 +50,18 @@ $brand-info:					#5bc0de;
 $brand-warning:					#f0ad4e;
 $brand-danger:					#d9534f;
 
+// z-indexing =================================================================
+
+.modal {             z-index:7000; }
+.alert-box {         z-index:6000; }
+.pace-progress {     z-index:5000; }
+.sidebar {           z-index:4000; }
+.page .cover {       z-index:3000; }
+.selectize-control { z-index:2000; }
+.redactor-box {      z-index:1000; }
+
 // General ====================================================================
+
 *, *:before, *:after {
 	box-sizing: border-box;
 }
@@ -152,6 +163,42 @@ code {
 	border:1px solid $border;
 }
 
+// Alerts =====================================================================
+.alert-box {
+	position: absolute;
+	left:240px;
+	right:0;
+	background: $brand-primary;
+	color: #fff;
+}
+
+.alert-effect-slidetop {
+	box-shadow: inset 64px 0 $brand-primary;
+}
+
+// Loader =====================================================================
+.pace {
+	-webkit-pointer-events: none;
+	pointer-events: none;
+
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+
+.pace-inactive {
+	display: none;
+}
+
+.pace .pace-progress {
+	background: $brand-primary;
+	position: fixed;
+	top: 0;
+	right: 100%;
+	width: 240px;
+	height: 3px;
+}
+
 // Forms ======================================================================
 form .help-block,
 form .error-block,
@@ -215,7 +262,6 @@ form label .popover-content {
 	margin-left: 0;
 	width: 240px;
 	transition: all .4s ease 0s;
-	z-index: 3000;
 	overflow: hidden;
 	background: $sidebar;
 	color: $text;
@@ -276,14 +322,12 @@ form label .popover-content {
 		bottom:0;
 		width: 100%;
 		height: 100%;
-		z-index: 2000;
 		background:$page;
 
 		span {
 			position: absolute;
 			top:16px;
 			right:32px;
-			z-index: 11;
 			color: $page-dark;
 			letter-spacing:2px;
 			text-transform: uppercase;
@@ -655,43 +699,6 @@ form label .popover-content {
 	}
 }
 
-// Alerts =====================================================================
-.alert-box {
-	position: absolute;
-	left:240px;
-	right:0;
-	background: $brand-primary;
-	color: #fff;
-}
-
-.alert-effect-slidetop {
-	box-shadow: inset 64px 0 $brand-primary;
-}
-
-// Loader =====================================================================
-.pace {
-	-webkit-pointer-events: none;
-	pointer-events: none;
-
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	user-select: none;
-}
-
-.pace-inactive {
-	display: none;
-}
-
-.pace .pace-progress {
-	background: $brand-primary;
-	position: fixed;
-	z-index: 1100;
-	top: 0;
-	right: 100%;
-	width: 240px;
-	height: 3px;
-}
-
 /* Data Grid
 ================================================== */
 #data-grid {
@@ -781,8 +788,4 @@ form label .popover-content {
 			}
 		}
 	}
-
-
 }
-
-
