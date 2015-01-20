@@ -313,7 +313,7 @@
  }
  .selectize-control .selectize-input.disabled {
  	opacity: 0.5;
- 	background-color: #ffffff;
+ 	background-color: #f7f7f7;
  }
  .selectize-dropdown,
  .selectize-dropdown.form-control {
