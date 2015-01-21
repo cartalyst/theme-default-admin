@@ -381,6 +381,20 @@ form label .popover-content {
 			}
 		}
 
+		.panel-heading .panel-close:after {
+			font-family: 'FontAwesome';
+			content: "\f205";
+			float: right;
+		}
+		.panel-heading.collapsed .panel-close:after {
+			content: "\f204";
+		}
+
+		.panel-close {
+			display: inline-block;
+			margin-top:4px;
+		}
+
 		.panel-footer {
 			padding-top:8px;
 			background-color: $panel;
@@ -472,15 +486,6 @@ form label .popover-content {
 			color: $text;
 		}
 
-		.panel-heading .panel-close:after {
-			font-family: 'FontAwesome';
-			content: "\f205";
-			float: right;
-		}
-		.panel-heading.collapsed .panel-close:after {
-			content: "\f204";
-		}
-
 		.panel-body {
 			padding:16px 32px;
 
@@ -495,11 +500,6 @@ form label .popover-content {
 			span {
 				cursor: pointer;
 			}
-		}
-
-		.panel-close {
-			display: inline-block;
-			padding: 0 8px;
 		}
 	}
 
@@ -524,15 +524,6 @@ form label .popover-content {
 			}
 		}
 
-		.panel-heading .panel-close:after {
-			font-family: 'FontAwesome';
-			content: "\f205";
-			float: right;
-		}
-		.panel-heading.collapsed .panel-close:after {
-			content: "\f204";
-		}
-
 		.panel-body {
 			padding:16px 32px;
 
@@ -549,13 +540,7 @@ form label .popover-content {
 				cursor: pointer;
 			}
 		}
-
-		.panel-close {
-			display: inline-block;
-			padding: 0 8px;
-		}
 	}
-
 }
 
 // Help =======================================================================
