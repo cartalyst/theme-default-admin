@@ -1,4 +1,4 @@
-@if (Alert::all('form'))
+@if (Alert::whereArea('form')->get())
 
 <div data-alert class="alert-box alert-bar alert-effect-slidetop alert-type-danger alert-show">
 	<div class="alert-box-inner">
@@ -10,7 +10,7 @@
 
 @endif
 
-@foreach ($alerts = Alert::except('form') as $alert)
+@foreach (Alert::whereNotArea('form')->get() as $alert)
 
 <div data-alert class="alert-box alert-bar alert-effect-slidetop alert-type-{{ $alert->class }} alert-show">
 	<div class="alert-box-inner">
