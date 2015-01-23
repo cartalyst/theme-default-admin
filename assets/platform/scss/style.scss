@@ -51,14 +51,13 @@ $brand-warning:					#f0ad4e;
 $brand-danger:					#d9534f;
 
 // z-indexing =================================================================
-
-.modal {              z-index:7000; }
-.alert-box {          z-index:6000; }
-.pace-progress {      z-index:5000; }
-.sidebar {            z-index:4000; }
-.page .cover {        z-index:3000; }
-.selectize-control {  z-index:2000; }
-.redactor-box {       z-index:1000; }
+.modal {              z-index:700; }
+.alert-box {          z-index:600; }
+.pace-progress {      z-index:500; }
+.sidebar {            z-index:400; }
+.page .cover {        z-index:300; }
+.selectize-control {  z-index:200; }
+.redactor-box {       z-index:100; }
 
 // General ====================================================================
 

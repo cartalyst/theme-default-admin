@@ -102,9 +102,9 @@ var Platform;
 	// Initialize Bootstrap Popovers
 	Platform.App.popovers = function()
 	{
-		$('.popover, [data-popover], [data-toggle="popover"]').popover({
-			trigger : 'hover'
-		});
+		Platform.Cache.$body.popover({ selector: 'popover, [data-popover], [data-toggle="popover"]', container: 'body' });
+
+		console.log('wtf');
 
 		return this;
 	};
