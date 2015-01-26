@@ -51,13 +51,12 @@ $brand-warning:					#f0ad4e;
 $brand-danger:					#d9534f;
 
 // z-indexing =================================================================
-.modal {              z-index:700; }
-.alert-box {          z-index:600; }
-.pace-progress {      z-index:500; }
-.sidebar {            z-index:400; }
-.page .cover {        z-index:300; }
-.selectize-control {  z-index:200; }
-.redactor-box {       z-index:100; }
+.modal {              z-index:1500; }
+.alert-box {          z-index:1400; }
+.pace-progress {      z-index:1300; }
+.sidebar {            z-index:1200; }
+.page .cover {        z-index:1100; }
+.redactor-box {       z-index:1000; }
 
 // General ====================================================================
 
@@ -724,26 +723,17 @@ form label .popover-content {
 	}
 }
 
-/* Not Sure
+/* Call Outs
 ================================================== */
-.btn-file {
-	position: relative;
-	overflow: hidden;
+.callout {
 
-	input[type=file] {
-		position: absolute;
-		top: 0;
-		right: 0;
-		min-width: 100%;
-		min-height: 100%;
-		font-size: 999px;
-		text-align: right;
-		filter: alpha(opacity=0);
-		opacity: 0;
-		outline: none;
-		background: white;
-		cursor: inherit;
-		display: block;
+	border-left:4px solid $brand-warning;
+	padding:8px 16px;
+
+	p {
+		font-style: italic;
+		font-size:1em;
+		line-height: 1.6em;
 	}
 }
 
