@@ -1,4 +1,4 @@
-# Admin Default Theme Change Log
+# Default Admin Theme Change Log
 
 This project follows [Semantic Versioning](CONTRIBUTING.md).
 
@@ -11,6 +11,13 @@ We do not give estimated times for completion on `Accepted` Proposals.
 
 ---
 
-### v1.0.0 - 2015-01-20
+### v1.0.0 - 2015-01-26
 
-- Initial stable release.
+- Initial stable release with:
+	- Twitter Bootstrap 3.3.2
+	- Font Awesome 4.3.0
+	- jQuery 2.1.3
+	- Modernizr 2.8.3
+	- Parsleyjs 2.0.7
+	- Underscore.js 1.7.0
+	- Moment.js 2.9.0
