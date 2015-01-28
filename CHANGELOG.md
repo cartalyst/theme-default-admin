@@ -11,6 +11,12 @@ We do not give estimated times for completion on `Accepted` Proposals.
 
 ---
 
+### v1.0.1 - 2015-01-28
+
+`REVISED`
+
+- Fixed version on `theme.json` file.
+
 ### v1.0.0 - 2015-01-26
 
 - Initial stable release with:
