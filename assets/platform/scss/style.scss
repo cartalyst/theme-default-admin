@@ -51,6 +51,7 @@ $brand-warning:					#f0ad4e;
 $brand-danger:					#d9534f;
 
 // z-indexing =================================================================
+.popover {            z-index:1600; }
 .modal {              z-index:1500; }
 .alert-box {          z-index:1400; }
 .pace-progress {      z-index:1300; }
