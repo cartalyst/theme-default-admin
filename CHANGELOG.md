@@ -11,6 +11,12 @@ We do not give estimated times for completion on `Accepted` Proposals.
 
 ---
 
+### v1.0.2 - 2015-02-09
+
+`REVISED`
+
+- Popover z-index override.
+
 ### v1.0.1 - 2015-01-28
 
 `REVISED`
