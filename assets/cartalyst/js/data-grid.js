@@ -6,13 +6,13 @@
  * Licensed under the Cartalyst PSL License.
  *
  * This source file is subject to the Cartalyst PSL License that is
- * bundled with this package in the license.txt file.
+ * bundled with this package in the LICENSE file.
  *
  * @package    Data Grid
- * @version    2.0.3
+ * @version    2.0.5
  * @author     Cartalyst LLC
  * @license    Cartalyst PSL
- * @copyright  (c) 2011-2014, Cartalyst LLC
+ * @copyright  (c) 2011-2015, Cartalyst LLC
  * @link       http://cartalyst.com
  */
 
@@ -491,6 +491,8 @@
 
 					if (/threshold/g.test(last_item))
 					{
+						self.extractThresholdFromRoute(last_item);
+
 						parsed_route = parsed_route.splice(0, (parsed_route.length - 1));
 
 						last_item = parsed_route[(parsed_route.length - 1)];
@@ -498,6 +500,8 @@
 
 					if (/throttle/g.test(last_item))
 					{
+						self.extractThrottleFromRoute(last_item);
+
 						parsed_route = parsed_route.splice(0, (parsed_route.length - 1));
 
 						last_item = parsed_route[(parsed_route.length - 1)];
@@ -563,18 +567,6 @@
 
 			last_item = _.last(_.compact(current_hash.split('/')));
 
-			if (/threshold/g.test(last_item))
-			{
-				self.extractThresholdFromRoute(last_item);
-
-				last_item = _.last(_.initial(_.compact(current_hash.split('/'))));
-			}
-
-			if (/throttle/g.test(last_item))
-			{
-				self.extractThrottleFromRoute(last_item);
-			}
-
 			if (current_hash.indexOf(self.key) === -1)
 			{
 				if (sorted_column && sorted_direction)
@@ -638,6 +630,16 @@
 				base += page;
 			}
 
+			if (throttle.length > 1)
+			{
+				base += throttle;
+			}
+
+			if (threshold.length > 1)
+			{
+				base += threshold;
+			}
+
 			if (filters.length < 1 || sort.length < 1 || self.pagination.page_index < 1 && base !== '')
 			{
 				base = '';
@@ -649,7 +651,7 @@
 
 			current_routes = String(current_hash);
 			routes_array   = _.compact(current_routes.split('grid/'));
-			route_index        = -1;
+			route_index    = -1;
 
 			_.each(routes_array, function(route)
 			{
@@ -688,16 +690,6 @@
 			if (path.length > 1 && path.substr(0, 4) !== 'grid')
 			{
 				path = 'grid/' + path;
-			}
-
-			if (throttle.length > 1)
-			{
-				path += throttle;
-			}
-
-			if (threshold.length > 1)
-			{
-				path += threshold;
 			}
 
 			if (path !== '')
@@ -868,6 +860,9 @@
 			_.each(filters, function(filter)
 			{
 				filter      = $(filter).data('filter');
+
+				if ( ! filter) return;
+
 				terms_count = filter.match(/:/g).length;
 				filter      = filter.split(':');
 				operator    = self.checkOperator(filter[1]) ? filter[1] : null;
@@ -1176,17 +1171,28 @@
 
 			this.default_filters = [];
 
-			if ($filter.data('reset') !== undefined)
+			if ($filter.data('reset') !== undefined || $filter.data('filter-reset') !== undefined)
 			{
 				this.reset();
 			}
-			else if ($filter.parent().data('reset') !== undefined)
+			else if ($filter.parent().data('reset') !== undefined || $filter.parent().data('filter-reset') !== undefined)
 			{
 				this.removeGroupFilters($filter.parent());
 			}
-			else if ($filter.parent().parent().data('reset') !== undefined)
+			else if ($filter.parent().parent().data('reset') !== undefined || $filter.parent().parent().data('filter-reset') !== undefined)
 			{
 				this.removeGroupFilters($filter.parent().parent());
+			}
+
+			if ( ! $filter.data('filter'))
+			{
+				if (refresh)
+				{
+					this.goToPage(1);
+					this.refresh();
+				}
+
+				return;
 			}
 
 			var filters_array = $filter.data('filter').split(', ');
@@ -1742,7 +1748,7 @@
 		{
 			if (defaults.throttle !== this.opt.throttle && this.opt.throttle)
 			{
-				return 'throttle' + this.opt.delimiter + this.opt.throttle + '/';
+				return '/throttle' + this.opt.delimiter + this.opt.throttle + '/';
 			}
 
 			return '/';
@@ -1757,7 +1763,7 @@
 		{
 			if (defaults.threshold !== this.opt.threshold && this.opt.threshold)
 			{
-				return 'threshold' + this.opt.delimiter + this.opt.threshold + '/';
+				return '/threshold' + this.opt.delimiter + this.opt.threshold + '/';
 			}
 
 			return '/';
