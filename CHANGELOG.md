@@ -11,6 +11,12 @@ We do not give estimated times for completion on `Accepted` Proposals.
 
 ---
 
+### v1.0.3 - 2015-05-12
+
+`FIXED`
+
+- Use a translated string for the error message on the alerts view.
+
 ### v1.0.2 - 2015-02-09
 
 `REVISED`
