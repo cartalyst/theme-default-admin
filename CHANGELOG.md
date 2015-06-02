@@ -11,6 +11,12 @@ We do not give estimated times for completion on `Accepted` Proposals.
 
 ---
 
+### v2.0.2 - 2015-06-02
+
+`FIXED`
+
+- Minor issue on the modal confirm "submit" button that was pushing the page to the top, on longer pages.
+
 ### v2.0.1 - 2015-05-12
 
 `FIXED`
@@ -20,6 +26,12 @@ We do not give estimated times for completion on `Accepted` Proposals.
 ### v2.0.0 - 2015-03-05
 
 - Updated for Platform 3.
+
+### v1.0.4 - 2015-06-02
+
+`FIXED`
+
+- Minor issue on the modal confirm "submit" button that was pushing the page to the top, on longer pages.
 
 ### v1.0.3 - 2015-05-12
 
