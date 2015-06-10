@@ -67,10 +67,16 @@ var Platform;
 		;
 
 		Platform.Cache.$body
-			.on('keyup', '[data-slugify]', Platform.App.slugify)
 			.on('click', '.toggle-sidebar', Platform.App.sidebarToggle)
 			.on('click', '[data-action-delete]', Platform.App.deletion)
 			.on('click', '[data-modal], [data-toggle="modal"]', Platform.App.modals)
+			.on('focus', '[data-slugify]', function()
+			{
+				if ($($(this).data('slugify')).val().length === 0)
+				{
+					$(this).on('keyup', Platform.App.slugify);
+				}
+			})
 		;
 
 		return this;
