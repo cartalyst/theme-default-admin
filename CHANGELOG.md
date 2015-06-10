@@ -11,6 +11,12 @@ We do not give estimated times for completion on `Accepted` Proposals.
 
 ---
 
+### v1.0.5 - 2015-06-10
+
+`REVISED`
+
+- Slugifier to only slugify it's value if the input to store the slugified value is empty.
+
 ### v1.0.4 - 2015-06-02
 
 `FIXED`
