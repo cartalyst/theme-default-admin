@@ -11,6 +11,12 @@ We do not give estimated times for completion on `Accepted` Proposals.
 
 ---
 
+### v2.0.4 - 2015-06-15
+
+`UPDATED`
+
+- Pace.js to v1.0.2.
+
 ### v2.0.3 - 2015-06-10
 
 `REVISED`
