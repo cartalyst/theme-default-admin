@@ -33,6 +33,12 @@ We do not give estimated times for completion on `Accepted` Proposals.
 
 - Updated for Platform 3.
 
+### v1.0.6 - 2015-06-15
+
+`UPDATED`
+
+- Pace.js to v1.0.2.
+
 ### v1.0.5 - 2015-06-10
 
 `REVISED`
