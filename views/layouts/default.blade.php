@@ -78,7 +78,7 @@
 				@include('partials/header')
 			</header>
 
-			{{-- Page --}}
+			{{-- Page content --}}
 			<div class="page__content container-fluid">
 				@yield('page')
 			</div>
