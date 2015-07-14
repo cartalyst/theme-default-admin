@@ -11,11 +11,29 @@ We do not give estimated times for completion on `Accepted` Proposals.
 
 ---
 
-### v1.0.4 - 2015-07-14
+### v1.0.7 - 2015-07-14
 
 `UPDATED`
 
 - Redactor.js 10.0.6 -> 10.2.1.
+
+### v1.0.6 - 2015-06-15
+
+`UPDATED`
+
+- Pace.js to v1.0.2.
+
+### v1.0.5 - 2015-06-10
+
+`REVISED`
+
+- Slugifier to only slugify it's value if the input to store the slugified value is empty.
+
+### v1.0.4 - 2015-06-02
+
+`FIXED`
+
+- Minor issue on the modal confirm "submit" button that was pushing the page to the top, on longer pages.
 
 ### v1.0.3 - 2015-05-12
 

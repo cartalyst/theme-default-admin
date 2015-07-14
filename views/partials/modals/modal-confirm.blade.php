@@ -16,7 +16,7 @@
 
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">{{{ trans('action.cancel') }}}</button>
-				<a href="#" class="btn btn-danger confirm">{{{ trans('action.delete') }}}</a>
+				<button type="button" class="btn btn-danger confirm">{{{ trans('action.delete') }}}</button>
 			</div>
 
 		</div>
