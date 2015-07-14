@@ -11,6 +11,12 @@ We do not give estimated times for completion on `Accepted` Proposals.
 
 ---
 
+### v2.0.5 - 2015-07-14
+
+`UPDATED`
+
+- Redactor.js 10.0.6 -> 10.2.1.
+
 ### v2.0.4 - 2015-06-15
 
 `UPDATED`
