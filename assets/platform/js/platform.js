@@ -121,7 +121,12 @@ var Platform;
 			$('.redactor').redactor({
 				minHeight: 200,
 				buttonSource: true,
-				toolbarFixed: true,
+                toolbarFixed: true,
+                imageUpload: '/admin/media/upload_json',
+                uploadImageFields: {
+                    '_token': $('meta[name="csrf-token"]').attr('content')
+                },
+                plugins: ['imagemanager']
 			});
 		}
 
