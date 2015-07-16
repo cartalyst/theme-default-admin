@@ -118,15 +118,23 @@ var Platform;
 	{
 		if ($.fn.redactor)
 		{
+            var csrf_token = $('meta[name="csrf-token"]').attr('content');
+
 			$('.redactor').redactor({
 				minHeight: 200,
 				buttonSource: true,
                 toolbarFixed: true,
                 imageUpload: '/admin/media/upload_json',
+                fileUpload: '/admin/media/upload_json',
                 uploadImageFields: {
-                    '_token': $('meta[name="csrf-token"]').attr('content')
+                    '_token': csrf_token
                 },
-                plugins: ['imagemanager']
+                uploadFileFields: {
+                    '_token': csrf_token
+                },
+                imageManagerJson: '/admin/media/images_list',
+                fileManagerJson: '/admin/media/files_list',
+                plugins: ['imagemanager', 'filemanager']
 			});
 		}
 
