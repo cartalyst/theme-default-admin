@@ -19,11 +19,11 @@
 	<meta name="csrf-token" content="{{ csrf_token() }}">
 
 	{{-- Queue assets --}}
-	{{ Asset::queue('bootstrap', 'bootstrap/css/bootstrap.min.css') }}
-	{{ Asset::queue('font-awesome', 'font-awesome/css/font-awesome.min.css', 'bootstrap') }}
-	{{ Asset::queue('metis-menu', 'metis-menu/css/metisMenu.min.css', 'font-awesome') }}
-	{{ Asset::queue('perfect-scrollbar', 'perfect-scrollbar/css/perfect-scrollbar.css', 'metis-menu') }}
-	{{ Asset::queue('style', 'platform/scss/style.scss', 'perfect-scrollbar') }}
+	{{ Asset::queue('bootstrap', 'bootstrap/css/bootstrap.min.css', 'bootstrap') }}
+	{{ Asset::queue('font-awesome', 'font-awesome/css/font-awesome.min.css', 'font-awesome') }}
+	{{ Asset::queue('metis-menu', 'metis-menu/css/metisMenu.min.css', 'metis-menu') }}
+	{{ Asset::queue('perfect-scrollbar', 'perfect-scrollbar/css/perfect-scrollbar.css', 'perfect-scrollbar') }}
+	{{ Asset::queue('style', 'platform/scss/style.scss', 'style') }}
 
 	{{ Asset::queue('pace', 'pace/js/pace.min.js') }}
 	{{ Asset::queue('modernizr', 'modernizr/js/modernizr.js', 'pace') }}
