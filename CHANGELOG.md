@@ -11,11 +11,16 @@ We do not give estimated times for completion on `Accepted` Proposals.
 
 ---
 
-### v2.0.5 - 2015-07-14
+### v2.0.5 - 2016-06-27
 
 `UPDATED`
 
 - Redactor.js 10.0.6 -> 10.2.1.
+- Moment.js 2.9.0 -> 2.13.0.
+
+`FIXED`
+
+- Deprecation warnings with moment.js on the date range picker.
 
 ### v2.0.4 - 2015-06-15
 
