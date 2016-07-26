@@ -1479,12 +1479,14 @@
    * @return void
    */
   DataGrid.prototype._fetchResults =
-  function _fetchResults() {
+  function _fetchResults(force) {
+    force = force !== undefined ? force : false;
+
     var _this = this;
     var uri = this._buildAjaxURI();
 
     // Only render if the ajax uri hasn't changed. (layout changes)
-    if (this.currentUri === uri) {
+    if (this.currentUri === uri && force !== true) {
       this._render();
     } else {
       $(this).trigger('dg:fetching', {grid: this});
@@ -1871,8 +1873,8 @@
    * @return {DataGrid}
    */
   DataGrid.prototype.refresh =
-  function refresh() {
-    $(this).trigger('dg:update');
+  function refresh(force) {
+    this._fetchResults(force);
 
     return this;
   };
