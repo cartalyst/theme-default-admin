@@ -163,11 +163,10 @@ code {
 
 // Alerts =====================================================================
 .alert-box {
-	position: absolute;
-	left:240px;
-	right:0;
+	position: relative;
 	background: $brand-primary;
 	color: #fff;
+    width:100%;
 }
 
 .alert-effect-slidetop {
