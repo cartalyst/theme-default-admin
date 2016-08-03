@@ -10,6 +10,7 @@ Reader-friendly Documentation can be found here. [Default Admin Theme Manual](ht
 
 Raw files can be found via this projects docs/version branch.
 
+- [3.0](https://github.com/cartalyst/theme-default-admin/tree/docs/3.0)
 - [2.0](https://github.com/cartalyst/theme-default-admin/tree/docs/2.0)
 - [1.0](https://github.com/cartalyst/theme-default-admin/tree/docs/1.0)
 
@@ -17,6 +18,7 @@ Raw files can be found via this projects docs/version branch.
 
 Important versions listed below. Refer to the [Change Log](CHANGELOG.md) for a full history of the project.
 
+- [3.0](CHANGELOG.md) - 2016-08-03
 - [2.0](CHANGELOG.md) - 2015-03-05
 - [1.0](CHANGELOG.md) - 2015-01-26
 

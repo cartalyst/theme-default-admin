@@ -11,6 +11,18 @@ We do not give estimated times for completion on `Accepted` Proposals.
 
 ---
 
+### v3.0.0 - 2016-08-03
+
+`UPDATED`
+
+- Font-Awesome 4.3.0 > 4.6.3
+- Moment.js 2.13.0 > 2.14.1
+- Modernizr 2.8.3 > 3.3.1
+- jQuery 2.1.3 > 2.2.4
+- Redactor 10.2.1 > 10.2.5
+- Selectize 0.11.2 > 0.12.2
+- Underscore 1.7.0 > 1.8.3
+
 ### v2.0.5 - 2016-06-27
 
 `UPDATED`
