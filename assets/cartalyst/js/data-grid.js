@@ -2029,13 +2029,13 @@
   DataGrid.prototype._getSearchSelector =
   function _getSearchSelector(value) {
     var gridSelector = this._getGridSelector();
-    var selector = 'form[data-grid-search]' + gridSelector;
+    var selector = '[data-grid-search]' + gridSelector;
 
     if (value) {
       selector += ' option[value=' + value + ']';
     }
 
-    selector += ',' + gridSelector + ' ' + 'form[data-grid-search]';
+    selector += ',' + gridSelector + ' ' + '[data-grid-search]';
 
     if (value) {
       selector += ' option[value=' + value + ']';
