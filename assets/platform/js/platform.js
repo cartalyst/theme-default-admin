@@ -124,8 +124,8 @@ var Platform;
 				minHeight: 200,
 				buttonSource: true,
                 toolbarFixed: true,
-                imageUpload: '/admin/media/upload_json',
-                fileUpload: '/admin/media/upload_json',
+                imageUpload: '/admin/media/upload_redactor',
+                fileUpload: '/admin/media/upload_redactor',
                 uploadImageFields: {
                     '_token': csrf_token
                 },
