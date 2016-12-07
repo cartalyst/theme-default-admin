@@ -40,7 +40,7 @@
     this.opt = _.assign(this.defaults);
     this.currentHash = null;
 
-    _.each(_.keys(options), $.proxy(function(key) {
+    _.each(_.keys(options), _.bind(function(key) {
       this.opt[key] = _.defaults(options[key], this.defaults[key]);
     }, this));
 
@@ -48,7 +48,7 @@
 
     this.backbone = Backbone.noConflict();
 
-    _.defer($.proxy(this._init, this));
+    _.defer(_.bind(this._init, this));
   }
 
   /**
@@ -58,7 +58,7 @@
    */
   DataGridManager.prototype._init =
   function _init() {
-    _.defer($.proxy(function() {
+    _.defer(_.bind(function() {
       this
         ._initRouter()
         ._initGrids();
@@ -80,7 +80,7 @@
         '*path': 'defaultRoute',
       },
 
-      defaultRoute: $.proxy(this._updateGrids, this),
+      defaultRoute: _.bind(this._updateGrids, this),
     });
 
     if (this.opt.url.semantic) {
@@ -135,7 +135,7 @@
         .applyFromRoute(separateRoutes[0])
         .refresh();
     } else {
-      _.each(this.grids, $.proxy(function(grid) {
+      _.each(this.grids, function(grid) {
         if (_.isEmpty(separateRoutes)) {
             grid.reset();
             grid.applyDefaults();
@@ -154,15 +154,15 @@
               }
             });
         }
-      }));
+      });
 
       untouchedGrids = _.difference(this.grids, updatedGrids);
 
-      _.each(untouchedGrids, $.proxy(function(grid) {
+      _.each(untouchedGrids, function(grid) {
         grid.reset();
         grid.applyDefaults();
         grid.refresh();
-      }, this));
+      }, this);
     }
 
     return this;
@@ -343,7 +343,7 @@
     // Options
     this.opt = _.assign(this.defaults);
 
-    _.each(_.keys(options), $.proxy(function(key) {
+    _.each(_.keys(options), _.bind(function(key) {
       if (key === 'layouts') {
         this.opt[key] = options[key];
       } else {
@@ -377,7 +377,7 @@
       baseThrottle: this.opt.pagination.throttle,
     };
 
-    _.defer($.proxy(this._init, this));
+    _.defer(_.bind(this._init, this));
 
     return this;
   }
@@ -411,11 +411,11 @@
     this.layouts = {};
     this.baseLayouts = {};
 
-    _.each(layouts, $.proxy(function(layout) {
+    _.each(layouts, _.bind(function(layout) {
       layoutName = $(layout).data('grid-layout');
 
       this.baseLayouts[layoutName] = layoutName;
-    }), this);
+    }, this));
 
     this._setLayouts(this.baseLayouts);
 
@@ -429,7 +429,7 @@
    */
   DataGrid.prototype._resetLayouts =
   function _resetLayouts() {
-    _.each(_.keys(this.layouts), $.proxy(function(key) {
+    _.each(_.keys(this.layouts), _.bind(function(key) {
       this.layouts[key].layout.html('');
     }, this));
 
@@ -444,7 +444,7 @@
    */
   DataGrid.prototype._setLayouts =
   function _setLayouts(options) {
-    _.each(options, $.proxy(function(template, name) {
+    _.each(options, _.bind(function(template, name) {
         this.setLayout(name, template, false);
     }, this));
 
@@ -469,13 +469,14 @@
     layouts[name] = template;
     this.baseLayouts[name] = template;
 
-    _.each(_.keys(layouts), $.proxy(function(key) {
+    _.each(_.keys(layouts), _.bind(function(key) {
       if (_.isNull(layouts[key])) {
         delete this.layouts[key];
         return;
       }
 
       $layout = this._getEl(this._getSelector('layout', name));
+
       $template = this._getEl(
         this._getSelector('template', layouts[key])
       );
@@ -592,8 +593,8 @@
    */
   DataGrid.prototype._bindCallback =
   function _bindCallback(event, callback) {
-    $(this).on(event, $.proxy(function() {
-      callback.apply(this, _.rest(arguments));
+    $(this).on(event, _.bind(function() {
+      callback.apply(this, _.tail(arguments));
     }, this));
   };
 
@@ -604,7 +605,7 @@
    */
   DataGrid.prototype._initFilters =
   function _initFilters() {
-    _.each(_.keys(this.availableFilters), $.proxy(function(type) {
+    _.each(_.keys(this.availableFilters), _.bind(function(type) {
       this.availableFilters[type].init();
     }, this));
 
@@ -622,7 +623,7 @@
       return;
     }
 
-    _.each(_.keys(events), $.proxy(function(event) {
+    _.each(_.keys(events), _.bind(function(event) {
       this._bindCallback(event, events[event]);
     }, this));
   };
@@ -638,41 +639,41 @@
     var throttled;
     var page;
 
-    $(this).on('dg:update', $.proxy(this._fetchResults, this));
+    $(this).on('dg:update', _.bind(this._fetchResults, this));
 
     this._initFilters()
       ._callbackListeners(this.opt.events);
 
     this.$body.on('click',
-      this._getGlobalResetSelector(), $.proxy(this._onGlobalReset, this)
+      this._getGlobalResetSelector(), _.bind(this._onGlobalReset, this)
     );
 
     this.$body.on('click',
-      this._getResetFilterSelector(), $.proxy(this._onFilterUnapply, this)
+      this._getResetFilterSelector(), _.bind(this._onFilterUnapply, this)
     );
 
     this.$body.on('click',
-      this._getResetGroupSelector(), $.proxy(this._onGroupFilterUnapply, this)
+      this._getResetGroupSelector(), _.bind(this._onGroupFilterUnapply, this)
     );
 
     this.$body.on('click',
-      this._getPlainSortSelector(), $.proxy(this._onSort, this)
+      this._getPlainSortSelector(), _.bind(this._onSort, this)
     );
 
     this.$body.on('click',
-      this._getSelector('page'), $.proxy(this._onPaginate, this)
+      this._getSelector('page'), _.bind(this._onPaginate, this)
     );
 
     this.$body.on('click',
-      this._getSelector('throttle'), $.proxy(this._onThrottle, this)
+      this._getSelector('throttle'), _.bind(this._onThrottle, this)
     );
 
     this.$body.on('click',
-      this._getSelector('download'), $.proxy(this._onDownload, this)
+      this._getSelector('download'), _.bind(this._onDownload, this)
     );
 
     this.$body.on('click',
-      this._getSelector('switch-layout'), $.proxy(this._onLayoutChange, this)
+      this._getSelector('switch-layout'), _.bind(this._onLayoutChange, this)
     );
 
     if (
@@ -681,7 +682,7 @@
     ) {
       offset = this.opt.pagination.scrollOffset || 400;
 
-      throttled = _.throttle($.proxy(function() {
+      throttled = _.throttle(_.bind(function() {
         if (
           $(window).scrollTop() >=
             $(document).height() - $(window).height() - offset
@@ -882,7 +883,7 @@
 
     // Default filter elements
     _.each(this._getEl(this._getSelector('filter-default')),
-      $.proxy(function(filter) {
+      _.bind(function(filter) {
         $filter = this._getEl(filter);
 
         type = $filter.data('grid-type') || 'term';
@@ -892,7 +893,7 @@
     );
 
     // Default filter presets
-    _.each(_.keys(this.opt.filters), $.proxy(function(name) {
+    _.each(_.keys(this.opt.filters), _.bind(function(name) {
       if (this.opt.filters[name].isDefault) {
         $filter = this._getEl(this._getSelector('filter', name));
 
@@ -935,7 +936,7 @@
    */
   DataGrid.prototype.removeFilter =
   function removeFilter(name) {
-    var filter = _.findWhere(this.appliedFilters, {name: name});
+    var filter = _.find(this.appliedFilters, {name: name});
 
     if (! filter) {
       return;
@@ -948,6 +949,10 @@
         return query.name === name;
       }
     );
+
+    if (this.opt.pagination.method === 'infinite') {
+      this._resetLayouts();
+    }
 
     this.goToPage(1);
 
@@ -970,7 +975,7 @@
 
     $(this).trigger('dg:removing_group', {group: group});
 
-    _.each($group.find('[data-grid-filter]'), $.proxy(function(filter) {
+    _.each($group.find('[data-grid-filter]'), _.bind(function(filter) {
       $(filter).removeClass(this.opt.cssClasses.appliedFilter);
 
       this.removeFilter($(filter).data('grid-filter'));
@@ -1034,7 +1039,7 @@
       .removeClass(ascClass)
       .removeClass(descClass);
 
-    _.each(sorts, $.proxy(function(sort) {
+    _.each(sorts, _.bind(function(sort) {
       remove = sort.direction === 'asc' ? descClass : ascClass;
       add = sort.direction === 'asc' ? ascClass : descClass;
 
@@ -1073,10 +1078,10 @@
       !_.isUndefined($filter.data('grid-search'))
     ) {
       _.each(
-        _.where(
+        _.filter(
           this.appliedFilters, {type: 'search'}
         ),
-        $.proxy(function(filter) {
+        _.bind(function(filter) {
           this.removeFilter(filter.name);
         }, this)
       );
@@ -1110,7 +1115,7 @@
    */
   DataGrid.prototype._isFilterApplied =
   function _isFilterApplied(filter) {
-    return _.isObject(_.findWhere(this.appliedFilters, {name: filter.name}));
+    return _.isObject(_.find(this.appliedFilters, {name: filter.name}));
   };
 
   /**
@@ -1138,7 +1143,7 @@
     var sortArray = $el.data('grid-sort').split(':');
     var column = _.trim(sortArray[0]);
     var direction = _.trim(sortArray[1]) || 'asc';
-    var sort = _.findWhere(this.sorts, {column: column});
+    var sort = _.find(this.sorts, {column: column});
 
     if (! column) {
       return;
@@ -1146,6 +1151,8 @@
 
     // Reset page for infinite grids
     if (opt.pagination.method === 'infinite') {
+      this._resetLayouts();
+
       this.goToPage(1);
     }
 
@@ -1196,7 +1203,7 @@
     return _.compact(
       _.map(
         sortRaw.split(this.opt.delimiter.query),
-        $.proxy(function(expression) {
+        _.bind(function(expression) {
           var sort = expression.split(this.opt.delimiter.expression);
 
           if (_.isEmpty(_.trim(sort))) {
@@ -1236,7 +1243,7 @@
 
     this.appliedFilters = [];
 
-    _.each(routes, $.proxy(function(fragment) {
+    _.each(routes, _.bind(function(fragment) {
       for (type in _.invert(_.keys(this.availableFilters))) {
         if (_.has(this.availableFilters, type)) {
           extracted =
@@ -1262,7 +1269,7 @@
     var sorts = sortRoute.split(this.opt.sorting.delimiter);
     var newSort;
 
-    _.each(sorts, $.proxy(function(sort) {
+    _.each(sorts, _.bind(function(sort) {
       newSort = sort.split(this.opt.delimiter.expression);
 
       this.sorts = _.reject(
@@ -1333,7 +1340,7 @@
     var layouts = layout.substr(7).split(',');
     var layoutParts;
 
-    _.each(layouts, $.proxy(function(layout) {
+    _.each(layouts, _.bind(function(layout) {
       layoutParts = layout.split(this.opt.delimiter.expression);
 
       _this.setLayout(layoutParts[0], layoutParts[1], false);
@@ -1347,7 +1354,7 @@
    */
   DataGrid.prototype._buildFilterFragment =
   function _buildFilterFragment() {
-    return _.flatten(_.map(this.appliedFilters, $.proxy(function(index) {
+    return _.flatten(_.map(this.appliedFilters, _.bind(function(index) {
       if (_.has(this.availableFilters, index.type)) {
         return this.availableFilters[index.type].buildFragment(index);
       }
@@ -1361,7 +1368,7 @@
    */
   DataGrid.prototype.buildDefaultFilterFragment =
   function buildDefaultFilterFragment() {
-    return _.flatten(_.map(this.appliedFilters, $.proxy(function(index) {
+    return _.flatten(_.map(this.appliedFilters, _.bind(function(index) {
       if (_.has(this.availableFilters, index.type)) {
         return this.availableFilters[index.type].buildFragment(index);
       }
@@ -1377,7 +1384,7 @@
   function _buildSortFragment() {
     var delimiter = this.opt.delimiter.expression;
 
-    var sorts = _.compact(_.map(this.sorts, $.proxy(function(sort) {
+    var sorts = _.compact(_.map(this.sorts, _.bind(function(sort) {
       if (
         (sort.column !== this.opt.sorting.column ||
         sort.direction !== this.opt.sorting.direction)
@@ -1422,7 +1429,7 @@
       return;
     }
 
-    _.each(this.baseLayouts, $.proxy(function(layout, key) {
+    _.each(this.baseLayouts, _.bind(function(layout, key) {
       if (key !== layout) {
         fragments.push(key + this.opt.delimiter.expression + layout);
       }
@@ -1503,7 +1510,7 @@
 
           _this._render();
         })
-        .error($.proxy(this._renderFailed, this));
+        .error(_.bind(this._renderFailed, this));
     }
 
     this.currentUri = uri;
@@ -1533,7 +1540,7 @@
       return false;
     }
 
-    _.each(_.keys(this.layouts), $.proxy(function(key) {
+    _.each(_.keys(this.layouts), _.bind(function(key) {
       active = _.isUndefined(
         this.layouts[key].layout.data('grid-layout-disabled')
       );
@@ -1628,7 +1635,7 @@
         this.opt.pagination.throttle : this.defaults.pagination.throttle;
     }
 
-    _.each(this.appliedFilters, $.proxy(function(filter) {
+    _.each(this.appliedFilters, _.bind(function(filter) {
       if (_.has(this.availableFilters, filter.type)) {
         params.filters = _.flatten(
           params.filters.concat(
@@ -1639,7 +1646,7 @@
     }, this));
 
     if (! _.isEmpty(this.sorts)) {
-      params.sort = _.map(this.sorts, $.proxy(function(sort) {
+      params.sort = _.map(this.sorts, _.bind(function(sort) {
         return {
           column: sort.column,
           direction: sort.direction,
@@ -2190,12 +2197,12 @@
   function _listeners() {
     this.grid.$body.on('click',
       this.grid._getTermSelector(),
-      $.proxy(this._onFilter, this)
+      _.bind(this._onFilter, this)
     );
 
     this.grid.$body.on('change',
       this.grid._getSelector('group', null, 'select'),
-      $.proxy(this._onSelectFilter, this)
+      _.bind(this._onSelectFilter, this)
     );
   };
 
@@ -2253,7 +2260,7 @@
    */
   TermFilter.prototype.buildParams =
   function buildParams(filter) {
-    return _.map(filter.query, $.proxy(function(query) {
+    return _.map(filter.query, _.bind(function(query) {
       var queryString = {};
 
       if (query.operator) {
@@ -2385,7 +2392,7 @@
     return _.compact(
       _.map(
         queryRaw.split(this.grid.opt.delimiter.query),
-        $.proxy(function(expression) {
+        _.bind(function(expression) {
           var query;
           var queryInfo;
 
@@ -2444,12 +2451,12 @@
 
     this.grid.$body.on('click',
       rangeSelector,
-      $.proxy(this._onRange, this)
+      _.bind(this._onRange, this)
     );
 
     this.grid.$body.on('change',
       rangeSelector,
-      $.proxy(this._onRangeChange, this)
+      _.bind(this._onRangeChange, this)
     );
   };
 
@@ -2717,7 +2724,7 @@
   function _listeners() {
     this.grid.$body.on('submit',
       this.grid._getSearchSelector(),
-      $.proxy(this._onSearch, this)
+      _.bind(this._onSearch, this)
     );
   };
 
@@ -2740,7 +2747,7 @@
     if (route.length === 3) {
       filter = {
         name: 'search:' + route[0] + ':' +
-          encodeURI(route[2]).toLowerCase().replace(/%/g, ''),
+          route[2].toLowerCase(),
         type: 'search',
         query: {
           column: route[0],
@@ -2751,7 +2758,7 @@
     } else {
       filter = {
         name: 'search:' + route[0] + ':' +
-          encodeURI(route[1]).toLowerCase().replace(/%/g, ''),
+          route[1].toLowerCase(),
         type: 'search',
         query: {
           column: route[0],
@@ -2775,7 +2782,7 @@
   function buildFragment(filter) {
     return filter.query.column +
       this.grid.opt.delimiter.expression +
-      encodeURI(filter.query.value);
+      filter.query.value;
   };
 
   /**
@@ -2853,7 +2860,7 @@
 
     filter = {
       name: 'search:' + column + ':' +
-        encodeURI(value).toLowerCase().replace(/%/g, ''),
+        value.toLowerCase(),
       type: 'search',
       query: {
         column: column,
@@ -2906,7 +2913,7 @@
     if (this.grid.opt.search.live) {
       this.grid.$body.on('keyup',
         this.grid._getSearchSelector(),
-        $.proxy(this._onLiveSearch, this)
+        _.bind(this._onLiveSearch, this)
       );
     }
   };
@@ -2977,7 +2984,7 @@
 
     clearTimeout(this.grid.searchTimeout);
 
-    this.grid.searchTimeout = setTimeout($.proxy(function($formEl) {
+    this.grid.searchTimeout = setTimeout(_.bind(function($formEl) {
       var $input = $formEl.find('input');
       var $select = $formEl.find('select:not([data-grid-group])');
       var column = $select.val() || 'all';
@@ -2985,6 +2992,10 @@
       var old = $input.data('old');
       var operator = $formEl.data('operator');
       var filter;
+
+      if (this.grid.opt.pagination.method === 'infinite') {
+        this.grid._resetLayouts();
+      }
 
       if (old) {
         this.grid.appliedFilters = _.reject(
