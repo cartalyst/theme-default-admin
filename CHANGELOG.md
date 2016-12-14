@@ -11,6 +11,12 @@ We do not give estimated times for completion on `Accepted` Proposals.
 
 ---
 
+### v3.0.1 - 2016-12-14
+
+`FIXED`
+
+- Redactor upload route.
+
 ### v3.0.0 - 2016-08-03
 
 `UPDATED`
