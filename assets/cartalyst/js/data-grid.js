@@ -9,10 +9,10 @@
  * bundled with this package in the LICENSE file.
  *
  * @package    Data Grid
- * @version    2.0.5
+ * @version    3.0.8
  * @author     Cartalyst LLC
  * @license    Cartalyst PSL
- * @copyright  (c) 2011-2016, Cartalyst LLC
+ * @copyright  (c) 2011-2017, Cartalyst LLC
  * @link       http://cartalyst.com
  */
 
@@ -36,6 +36,9 @@
 			desc: 'desc'
 		},
 		delimiter: ':',
+		date_formats: [
+			'DD MMM, YYYY'
+		],
 		date_format_attribute: 'format',
 		template_settings: {
 			evaluate    : /<%([\s\S]+?)%>/g,
@@ -317,7 +320,14 @@
 
 				var index   = $(this).index();
 				var filter  = self.applied_filters[index];
-				var $filter = self.$body.find('[data-filter="'+filter.column+':'+filter.value+'"]');
+				var filterSelector = '[data-filter="'+filter.column+':'+filter.value+'"]';
+
+				if (filter.operator !== undefined) {
+					filterSelector = '[data-filter="'+filter.column+':'+filter.operator+':'+filter.value+'"]';
+				}
+
+				var $filter = self.$body.find(filterSelector);
+
 
 				if ($filter.prop('tagName') === 'OPTION')
 				{
@@ -411,7 +421,7 @@
 				{
 					self.handleSearchOnSubmit($(this));
 				}
-				else if (e.type === 'keyup' && e.keyCode !== 13 && $(this).find('input').val() && self.opt.live_search)
+				else if (e.type === 'keyup' && e.keyCode !== 13 && self.opt.live_search)
 				{
 					self.handleLiveSearch($(this));
 				}
@@ -1143,8 +1153,8 @@
 
 			if (date_format !== null && date_format !== undefined && window.moment !== undefined)
 			{
-				from = moment(from).format(db_date_format);
-				to   = moment(to).format(db_date_format);
+				from = moment(from, this.opt.date_formats).format(db_date_format);
+				to   = moment(to, this.opt.date_formats).format(db_date_format);
 			}
 
 			filter_data = {
@@ -1413,7 +1423,7 @@
 
 			for (var i = 0; i < route_array.length; i++)
 			{
-				var $filter     = $('[data-filter*="' + route_array[i] + '"]' + grid + ',' + grid + ' [data-filter*="' + route_array[i] + '"]');
+				var $filter     = $('[data-filter="' + route_array[i] + '"]' + grid + ',' + grid + ' [data-filter="' + route_array[i] + '"]');
 				var filter      = route_array[i].split(':');
 				var terms_count = route_array[i].match(/:/g).length;
 				var label;
