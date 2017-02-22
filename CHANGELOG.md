@@ -11,6 +11,12 @@ We do not give estimated times for completion on `Accepted` Proposals.
 
 ---
 
+### v3.0.2 - 2017-02-22
+
+`UPDATED`
+
+- Data Grid.
+
 ### v3.0.1 - 2016-12-14
 
 `FIXED`

@@ -9,10 +9,10 @@
  * bundled with this package in the license.txt file.
  *
  * @package    Platform
- * @version    3.0.1
+ * @version    3.0.2
  * @author     Cartalyst LLC
  * @license    Cartalyst PSL
- * @copyright  (c) 2011-2016, Cartalyst LLC
+ * @copyright  (c) 2011-2017, Cartalyst LLC
  * @link       http://cartalyst.com
  */
 
