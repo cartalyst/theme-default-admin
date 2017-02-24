@@ -10,6 +10,7 @@ Reader-friendly Documentation can be found here. [Default Admin Theme Manual](ht
 
 Raw files can be found via this projects docs/version branch.
 
+- [4.0](https://github.com/cartalyst/theme-default-admin/tree/docs/4.0)
 - [3.0](https://github.com/cartalyst/theme-default-admin/tree/docs/3.0)
 - [2.0](https://github.com/cartalyst/theme-default-admin/tree/docs/2.0)
 - [1.0](https://github.com/cartalyst/theme-default-admin/tree/docs/1.0)
@@ -18,6 +19,7 @@ Raw files can be found via this projects docs/version branch.
 
 Important versions listed below. Refer to the [Change Log](CHANGELOG.md) for a full history of the project.
 
+- [4.0](CHANGELOG.md) - 2017-02-24
 - [3.0](CHANGELOG.md) - 2016-08-03
 - [2.0](CHANGELOG.md) - 2015-03-05
 - [1.0](CHANGELOG.md) - 2015-01-26
@@ -41,4 +43,4 @@ Bug reports, feature requests, and pull requests can be submitted by following o
 
 This software is released under the [Cartalyst PSL](LICENSE) License.
 
-© 2011-2016 Cartalyst LLC, All rights reserved.
+© 2011-2017 Cartalyst LLC, All rights reserved.

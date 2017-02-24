@@ -12,7 +12,7 @@
  * @version    4.0.0
  * @author     Cartalyst LLC
  * @license    Cartalyst PSL
- * @copyright  (c) 2011-2016, Cartalyst LLC
+ * @copyright  (c) 2011-2017, Cartalyst LLC
  * @link       http://cartalyst.com
  */
 
@@ -476,7 +476,6 @@
       }
 
       $layout = this._getEl(this._getSelector('layout', name));
-
       $template = this._getEl(
         this._getSelector('template', layouts[key])
       );
