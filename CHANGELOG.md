@@ -11,9 +11,21 @@ We do not give estimated times for completion on `Accepted` Proposals.
 
 ---
 
+### v5.0.1 - 2017-03-01
+
+`UPDATED`
+
+- Data Grid js.
+
 ### v5.0.0 - 2017-02-24
 
 - Updated for Platform 7.
+
+### v4.0.1 - 2017-03-01
+
+`UPDATED`
+
+- Data Grid js.
 
 ### v4.0.0 - 2017-02-24
 
