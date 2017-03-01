@@ -9,7 +9,7 @@
  * bundled with this package in the LICENSE file.
  *
  * @package    Data Grid
- * @version    4.0.0
+ * @version    4.0.1
  * @author     Cartalyst LLC
  * @license    Cartalyst PSL
  * @copyright  (c) 2011-2017, Cartalyst LLC
@@ -1509,7 +1509,7 @@
 
           _this._render();
         })
-        .error(_.bind(this._renderFailed, this));
+        .fail(_.bind(this._renderFailed, this));
     }
 
     this.currentUri = uri;
