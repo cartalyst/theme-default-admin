@@ -9,2463 +9,3092 @@
  * bundled with this package in the LICENSE file.
  *
  * @package    Data Grid
- * @version    2.0.5
+ * @version    4.0.1
  * @author     Cartalyst LLC
  * @license    Cartalyst PSL
- * @copyright  (c) 2011-2016, Cartalyst LLC
+ * @copyright  (c) 2011-2017, Cartalyst LLC
  * @link       http://cartalyst.com
  */
 
-;(function ($, window, document, undefined)
-{
-	'use strict';
-
-	/**
-	 * Default settings
-	 *
-	 * @var array
-	 */
-	var defaults = {
-		source: null,
-		threshold: null,
-		throttle: null,
-		method: 'single',
-		sort: {},
-		sort_classes: {
-			asc: 'asc',
-			desc: 'desc'
-		},
-		delimiter: ':',
-		date_format_attribute: 'format',
-		template_settings: {
-			evaluate    : /<%([\s\S]+?)%>/g,
-			interpolate : /<%=([\s\S]+?)%>/g,
-			escape      : /<%-([\s\S]+?)%>/g
-		},
-		cache_response: false,
-		live_search: true,
-		scroll: null,
-		search_timeout: 800,
-		hash: true,
-		loader: undefined,
-		loader_class: undefined,
-		callback: undefined
-	};
-
-	// Hash Settings
-	var default_hash = '';
-	var initial = true;
-
-	// Database date formats
-	var db_timestamp_format = 'YYYY-MM-DD HH:mm:ss';
-	var db_date_format      = 'YYYY-MM-DD';
-
-	// Search
-	var search_timeout;
-	var is_search_active = false;
-
-	function DataGrid(grid, results, pagination, filters, options)
-	{
-		var self = this;
-
-		self.key = grid;
-
-		self.grid = '[data-grid="' + grid + '"]';
-
-		self.default_filters = [];
-		self.applied_filters = [];
-
-		self.default_column = '';
-		self.default_direction = '';
-
-		self.current_sort = {
-			column: null,
-			direction: null,
-			index: 0
-		};
-
-		self.pagination = {
-			page_index: 1,
-			pages: null,
-			total: null,
-			filtered: null,
-			base_throttle: null
-		};
-
-		// Our Main Elements
-		self.$results    = $(results + self.grid).length > 0 ? $(results + self.grid) : $(self.grid + ' ' + results);
-		self.$pagination = $(pagination + self.grid).length > 0 ? $(pagination + self.grid) : $(self.grid + ' ' + pagination);
-		self.$filters    = $(filters + self.grid).length > 0 ? $(filters + self.grid) : $(self.grid + ' ' + filters);
-		self.$body       = $(document.body);
-
-		// Options
-		self.opt = $.extend({}, defaults, options);
-
-		// Source
-		self.source = self.$results.data('source') || self.opt.source;
-
-		// Safety Check
-		if (self.$results.get(0).tagName.toLowerCase() === 'table')
-		{
-			self.$results = $(results + self.grid).length > 0 ? $(results + self.grid).find('tbody') : $(self.grid + ' ' + results).find('tbody');
-		}
-
-		// Setup Default Hash
-		default_hash = grid;
-
-		// Setup Base Throttle
-		self.pagination.base_throttle = this.opt.throttle ? this.opt.throttle : defaults.throttle;
-
-		// Check our dependencies
-		self.checkDependencies();
-
-		// Initialize Data Grid
-		self.init();
-	}
-
-	DataGrid.prototype = {
-
-		/**
-		 * Initializes Data Grid.
-		 *
-		 * @return void
-		 */
-		init: function()
-		{
-			this.events();
-
-			this.checkHash();
-		},
-
-		/**
-		 * Checks the Data Grid dependencies.
-		 *
-		 * @return void
-		 */
-		checkDependencies: function ()
-		{
-			if (typeof window._ === 'undefined')
-			{
-				throw new Error('Underscore is not defined. DataGrid Requires UnderscoreJS v1.6.0 or later to run!');
-			}
-
-			var grid = this.grid;
-
-			// Set _ templates interpolate
-			_.templateSettings = this.opt.template_settings;
-
-			var results_template       = $('[data-template="results"]' + grid).html();
-			var pagination_template    = $('[data-template="pagination"]' + grid).html();
-			var filters_template       = $('[data-template="filters"]' + grid).html();
-			var empty_results_template = $('[data-template="no_results"]' + grid).html();
-			var empty_filters_template = $('[data-template="no_filters"]' + grid).html();
-
-			if (results_template === undefined)
-			{
-				console.error('results template not found.');
-			}
-
-			if (pagination_template === undefined)
-			{
-				console.error('pagination template not found.');
-			}
-
-			if (filters_template === undefined)
-			{
-				console.error('filters template not found.');
-			}
-
-			// Allow empty no_results template
-			if (empty_results_template === undefined)
-			{
-				empty_results_template = "";
-			}
-
-			// Allow empty no_filters template
-			if (empty_filters_template === undefined)
-			{
-				empty_filters_template = "";
-			}
-
-			// Cache the Underscore Templates
-			this.tmpl = {
-				results:       _.template(results_template),
-				pagination:    _.template(pagination_template),
-				filters:       _.template(filters_template),
-				empty_results: _.template(empty_results_template),
-				empty_filters: _.template(empty_filters_template)
-			};
-		},
-
-		/**
-		 * Checks the Internet Explorer version.
-		 *
-		 * @return mixed
-		 */
-		checkIE: function()
-		{
-			var undef,
-				v = 3,
-				div = document.createElement('div'),
-				all = div.getElementsByTagName('i');
-
-			while (
-				div.innerHTML = '<!--[if gt IE ' + (++v) + ']><i></i><![endif]-->',
-				all[0]
-			) {}
-
-			return v > 4 ? v : undef;
-		},
-
-		/**
-		 * Initializes all the event listeners.
-		 *
-		 * @return void
-		 */
-		events: function()
-		{
-			var self    = this;
-			var grid    = self.grid;
-			var options = self.opt;
-			var events  = options.events;
-
-			var route_array;
-			var date_range_el = this.$body.find('[data-range-filter]' + grid + ',' + grid + ' [data-range-filter]');
-
-			$(this).on('dg:update', this.fetchResults);
-
-			if (options.hash)
-			{
-				$(this).on('dg:hashchange', this.pushHash);
-			}
-
-			$(window).on('hashchange', function()
-			{
-				route_array = String(window.location.hash.slice(3)).split('/');
-
-				self.updateOnHash(route_array);
-			});
-
-			this.$body.on('click', '*', function()
-			{
-				self.initial = false;
-			});
-
-			this.$body.on('click', '[data-sort]' + grid + ',' + grid + ' [data-sort]', function(e)
-			{
-				e.preventDefault();
-
-				if (options.method === 'infinite')
-				{
-					self.$results.empty();
-				}
-
-				self.extractSortsFromClick($(this));
-
-				self.refresh();
-			});
-
-			this.$body.on('click', '[data-filter-default]' + grid  + ',' + grid + ' [data-filter-default]', function(e)
-			{
-				e.preventDefault();
-
-				self.reset();
-
-				self.extractFilters($(this));
-			});
-
-			this.$body.on('click', '[data-reset]' + grid + ':not([data-filter]):not([data-select-filter]),' + grid + ' [data-reset]:not([data-filter]):not([data-select-filter])', function(e)
-			{
-				e.preventDefault();
-
-				self.reset();
-
-				self.refresh();
-			});
-
-			this.$body.on('click', '[data-filter]' + grid + ':not([data-filter-default]),' + grid + ' [data-filter]:not([data-filter-default])', function(e)
-			{
-				e.preventDefault();
-
-				self.applyScroll();
-
-				if ($(this).data('single-filter') !== undefined)
-				{
-					self.applied_filters = [];
-				}
-
-				if (options.method === 'infinite')
-				{
-					self.$results.empty();
-
-					self.pagination.page_index = 1;
-				}
-
-				self.extractFilters($(this));
-			});
-
-			$(date_range_el).on('change', function()
-			{
-				self.removeRangeFilters($(this));
-
-				self.rangeFilter($(this));
-			});
-
-			this.$filters.on('click', '> *', function(e)
-			{
-				e.preventDefault();
-
-				var index   = $(this).index();
-				var filter  = self.applied_filters[index];
-				var $filter = self.$body.find('[data-filter="'+filter.column+':'+filter.value+'"]');
-
-				if ($filter.prop('tagName') === 'OPTION')
-				{
-					$filter.parent().find(':eq(0)').prop('selected', true);
-				}
-
-				if (self.applied_filters[index].type === 'range' || self.applied_filters[index].type === 'ranges')
-				{
-					self.$body.find('[data-range-filter="' + self.applied_filters[index].column + '"]' + grid + ',' + grid + ' [data-range-filter="' + self.applied_filters[index].column + '"]').val('');
-				}
-
-				self.removeFilters(index);
-
-				if (options.method === 'infinite')
-				{
-					self.$results.empty();
-				}
-
-				self.refresh();
-			});
-
-			this.$body.on('change', '[data-select-filter]' + grid + ',' + grid + ' [data-select-filter]', function()
-			{
-				if ($(this).find(':selected').data('filter') !== undefined)
-				{
-					self.extractFilters($(this).find(':selected'));
-				}
-				else
-				{
-					if ($(this).find(':selected').data('reset') !== undefined)
-					{
-						self.reset();
-					}
-					else
-					{
-						self.removeGroupFilters($(this));
-					}
-					self.refresh();
-				}
-			});
-
-			if (this.opt.infinite_scroll && this.opt.method === 'infinite')
-			{
-				var offset = this.opt.scroll_offset || 400;
-
-				var throttled = _.throttle(function()
-				{
-					if ($(window).scrollTop() >= $(document).height() - $(window).height() - offset)
-					{
-						var page = self.pagination.page_index + 1;
-
-						if (page <= self.pagination.pages)
-						{
-							self.goToPage(page);
-
-							self.refresh();
-						}
-					}
-				}, 800);
-
-				$(window).scroll(throttled);
-			}
-
-			this.$pagination.on('click', '[data-page]', function(e)
-			{
-				e.preventDefault();
-
-				$(self).trigger('dg:switching', self);
-
-				self.applyScroll();
-
-				self.handlePageChange($(this));
-
-				$(self).trigger('dg:switched', self);
-			});
-
-			this.$pagination.on('click', '[data-throttle]', function(e)
-			{
-				e.preventDefault();
-
-				options.throttle += self.pagination.base_throttle;
-
-				self.refresh();
-			});
-
-			this.$body.on('submit keyup', '[data-search]' + grid + ',' + grid + ' ' + '[data-search]', function(e)
-			{
-				e.preventDefault();
-
-				if (e.type === 'submit')
-				{
-					self.handleSearchOnSubmit($(this));
-				}
-				else if (e.type === 'keyup' && e.keyCode !== 13 && $(this).find('input').val() && self.opt.live_search)
-				{
-					self.handleLiveSearch($(this));
-				}
-			});
-
-			this.$body.on('click', '[data-download]', function(e)
-			{
-				e.preventDefault();
-
-				var type = $(this).data('download');
-
-				document.location = self.source + '?' + self.buildAjaxURI(type);
-			});
-
-			if (events !== undefined)
-			{
-				var event_keys = _.keys(events);
-
-				_.each(event_keys, function(key)
-				{
-					$(self).on('dg:' + key, function()
-					{
-						events[key](self);
-					});
-				});
-			}
-		},
-
-		/**
-		 * Check hash.
-		 *
-		 * @return void
-		 */
-		checkHash: function()
-		{
-			var path   = String(window.location.hash.slice(3));
-			var routes = path.split('/');
-
-			routes = _.compact(routes);
-
-			this.updateOnHash(routes);
-		},
-
-		/**
-		 * Update on hash change.
-		 *
-		 * @param  array  routes
-		 * @return void
-		 */
-		updateOnHash: function(routes)
-		{
-			var self             = this;
-			var options          = self.opt;
-			var current_route    = '/' + routes.join('/');
-			var current_hash     = String(window.location.hash.slice(3));
-			var sorted_column    = options.sort.hasOwnProperty('column');
-			var sorted_direction = options.sort.hasOwnProperty('direction');
-			var parsed_route;
-			var next_item;
-			var last_item;
-
-			routes = _.compact(current_route.split('/grid/'));
-
-			this.reset();
-
-			this.initdefault_filters();
-
-			_.each(routes, function(route)
-			{
-				parsed_route = _.compact(route.split('/'));
-
-				if (parsed_route[0] === self.key)
-				{
-					// Build Array For Sorts
-					last_item = parsed_route[(parsed_route.length - 1)];
-					next_item = parsed_route[(parsed_route.length - 2)];
-
-					if (/threshold/g.test(last_item))
-					{
-						self.extractThresholdFromRoute(last_item);
-
-						parsed_route = parsed_route.splice(0, (parsed_route.length - 1));
-
-						last_item = parsed_route[(parsed_route.length - 1)];
-					}
-
-					if (/throttle/g.test(last_item))
-					{
-						self.extractThrottleFromRoute(last_item);
-
-						parsed_route = parsed_route.splice(0, (parsed_route.length - 1));
-
-						last_item = parsed_route[(parsed_route.length - 1)];
-					}
-
-					// Use test to return true/false
-					if (/page/g.test(last_item))
-					{
-						// Remove Page From parsed_route
-						parsed_route = parsed_route.splice(0, (parsed_route.length - 1));
-
-						self.extractPageFromRoute(last_item);
-					}
-					else
-					{
-						self.pagination.page_index = 1;
-					}
-
-					if ((/desc/g.test(next_item)) || (/asc/g.test(next_item)))
-					{
-						// Remove Sort From parsed_route
-						parsed_route = parsed_route.splice(0, (parsed_route.length - 1));
-
-						self.extractSortsFromRoute(next_item);
-					}
-					else if ((/desc/g.test(last_item)) || (/asc/g.test(last_item)))
-					{
-						// Remove Sort From parsed_route
-						parsed_route = parsed_route.splice(0, (parsed_route.length - 1));
-
-						self.extractSortsFromRoute(last_item);
-					}
-					else if (sorted_column && sorted_direction)
-					{
-						// Convert sort to string
-						var str = self.opt.sort.column + self.opt.delimiter + self.opt.sort.direction;
-
-						self.extractSortsFromRoute(str);
-					}
-					else
-					{
-						self.current_sort.direction = '';
-						self.current_sort.column    = '';
-					}
-
-					// Build Array For Filters
-					if (parsed_route.length !== 0 )
-					{
-						// Reset filters then rebuild.
-						self.applied_filters = [];
-
-						self.extractFiltersFromRoute(parsed_route);
-					}
-					else
-					{
-						// Reset applied filters if none are set via the hash
-						self.applied_filters = [];
-
-						self.$filters.html(self.tmpl.empty_filters());
-					}
-				}
-			});
-
-			last_item = _.last(_.compact(current_hash.split('/')));
-
-			if (current_hash.indexOf(self.key) === -1)
-			{
-				if (sorted_column && sorted_direction)
-				{
-					var str = options.sort.column + options.delimiter + options.sort.direction;
-
-					self.extractSortsFromRoute(str);
-				}
-			}
-
-			self.refresh();
-		},
-
-		/**
-		 * Push hash state.
-		 *
-		 * @return void
-		 */
-		pushHash: function()
-		{
-			var self           = this;
-			var base           = '';
-			var parsed_route   = '';
-			var key            = '';
-			var appended       = false;
-			var path           = '';
-			var final_path     = '';
-			var current_routes = '';
-			var routes_array   = '';
-			var route_index    = '';
-			var current_hash   = window.location.hash.slice(3);
-
-			if (current_hash.substr(0, 4) !== 'grid' && this.initial)
-			{
-				return;
-			}
-			else if (current_hash.substr(0, 4) !== 'grid')
-			{
-				current_hash = '';
-			}
-
-			// #!/grid/key/filters/sorts/page/throttle/threshold
-			var filters   = self.buildFilterFragment();
-			var sort      = self.buildSortFragment();
-			var page      = self.buildPageFragment();
-			var throttle  = self.buildThrottleFragment();
-			var threshold = self.buildThresholdFragment();
-
-			if (filters.length > 1)
-			{
-				base += filters;
-			}
-
-			if (sort.length > 1)
-			{
-				base += sort;
-			}
-
-			if (self.pagination.page_index > 1 && page !== undefined)
-			{
-				base += page;
-			}
-
-			if (throttle.length > 1)
-			{
-				base += throttle;
-			}
-
-			if (threshold.length > 1)
-			{
-				base += threshold;
-			}
-
-			if (filters.length < 1 || sort.length < 1 || self.pagination.page_index < 1 && base !== '')
-			{
-				base = '';
-			}
-			else
-			{
-				base = base.length > 1 ? this.key + base : '';
-			}
-
-			current_routes = String(current_hash);
-			routes_array   = _.compact(current_routes.split('grid/'));
-			route_index    = -1;
-
-			_.each(routes_array, function(route)
-			{
-				parsed_route = route.split('/');
-				key = parsed_route[0];
-
-				// hash exists
-				if (key === self.key)
-				{
-					// keep track of hash index for building the new hash
-					route_index = _.indexOf(routes_array, route);
-
-					// remove existing hash
-					routes_array = _.without(routes_array, route);
-				}
-			});
-
-			routes_array = _.compact(routes_array);
-
-			for (var i = 0; i < routes_array.length; i++)
-			{
-				if (i === route_index)
-				{
-					final_path += base !== '' ? 'grid/' + base : '';
-
-					appended = true;
-				}
-
-				final_path += 'grid/' + routes_array[i];
-			}
-
-			final_path += ! appended && base !== '' ? 'grid/' + base : '';
-
-			path = _.isEmpty(routes_array) ? base : final_path;
-
-			if (path.length > 1 && path.substr(0, 4) !== 'grid')
-			{
-				path = 'grid/' + path;
-			}
-
-			if (path !== '')
-			{
-				path = path.replace(/\/\//g, '/');
-
-				if (current_hash !== path)
-				{
-					window.history.pushState(null, null, '#!/' + path);
-				}
-			}
-			else
-			{
-				if (current_hash !== '')
-				{
-					var default_uri = window.location.protocol + '//' + window.location.host + window.location.pathname;
-
-					window.history.pushState(null, null, default_uri);
-				}
-			}
-		},
-
-		/**
-		 * Apply a filter.
-		 *
-		 * @param  object  filter
-		 * @return void
-		 */
-		applyFilter: function(filter)
-		{
-			if (this.searchForFilter(filter) === -1)
-			{
-				$(this).trigger('dg:applying', this);
-
-				var without = [];
-				var exists  = false;
-
-				_.each(this.applied_filters, function(_filter)
-				{
-					if (JSON.stringify(_filter) === JSON.stringify(filter))
-					{
-						exists = true;
-					}
-				});
-
-				if ( ! exists)
-				{
-					// Apply filters to our global array.
-					this.applied_filters.push(filter);
-				}
-
-				// Create a new array without livesearch items
-				for (var i = 0; i < this.applied_filters.length; i++)
-				{
-					if (this.applied_filters[i].type !== 'live')
-					{
-						without.push(this.applied_filters[i]);
-					}
-				}
-
-				// Render our filters
-				this.$filters.html(this.tmpl.filters({ filters: without }));
-
-				$(this).trigger('dg:applied', this);
-			}
-		},
-
-		/**
-		 * Apply a default filter.
-		 *
-		 * @param  object  filter
-		 * @return void
-		 */
-		applyDefaultFilter: function(filter)
-		{
-			$(this).trigger('dg:applying_default', this);
-
-			var exists = false;
-
-			_.each(this.default_filters, function(_filter)
-			{
-				if (JSON.stringify(_filter) === JSON.stringify(filter))
-				{
-					exists = true;
-				}
-			});
-
-			if ( ! exists)
-			{
-				this.default_filters.push(filter);
-			}
-
-			$(this).trigger('dg:applied_default', this);
-		},
-
-		/**
-		 * Initialize default filters.
-		 *
-		 * @return void
-		 */
-		initdefault_filters: function()
-		{
-			var self = this;
-
-			if (window.location.hash === '')
-			{
-				_.each($('[data-filter-default]' + self.grid + ', ' + self.grid + ' [data-filter-default]'), function(defaultFilter)
-				{
-					self.extractFilters($(defaultFilter));
-				});
-			}
-		},
-
-		/**
-		 * Remove filter at index.
-		 *
-		 * @param  int  index
-		 * @return void
-		 */
-		removeFilters: function(index)
-		{
-			$(this).trigger('dg:removing', this);
-
-			var grid   = this.grid;
-			var filter = this.applied_filters[index];
-			var $el;
-
-			if (filter.type === 'range')
-			{
-				$el = $(grid + '[data-filter*="' + filter.column + ':' + filter.from + ':' + filter.to + '"],' + grid + ' [data-filter*="' + filter.column + ':' + filter.from + ':' + filter.to + '"]');
-			}
-			else
-			{
-				$el = $(grid + '[data-filter*="' + filter.column + ':' + filter.value + '"],' + grid + ' [data-filter*="' + filter.column + ':' + filter.value + '"]');
-			}
-
-			this.applied_filters.splice(index, 1);
-
-			if (this.applied_filters.length > 0)
-			{
-				this.$filters.html(this.tmpl.filters({ filters: this.applied_filters }));
-			}
-			else
-			{
-				this.$filters.html(this.tmpl.empty_filters);
-			}
-
-			this.goToPage(1);
-
-			$(this).trigger('dg:removed', this);
-		},
-
-		/**
-		 * Remove filters from group.
-		 *
-		 * @param  object $filters
-		 * @return void
-		 */
-		removeGroupFilters: function($filters)
-		{
-			var self    = this;
-			var filters = $filters.find('[data-filter]');
-			var index   = -1;
-			var filter_data;
-			var terms_count;
-			var operator;
-
-			_.each(filters, function(filter)
-			{
-				filter      = $(filter).data('filter');
-
-				if ( ! filter) return;
-
-				terms_count = filter.match(/:/g).length;
-				filter      = filter.split(':');
-				operator    = self.checkOperator(filter[1]) ? filter[1] : null;
-
-				if (terms_count === 2 && operator === null)
-				{
-					filter_data = {
-						column: filter[0],
-						from: filter[1],
-						to: filter[2],
-						type: 'range'
-					};
-				}
-				else if (terms_count === 2 && operator !== undefined)
-				{
-					filter_data = {
-						column: filter[0],
-						value: $('<p/>').text(filter[2]).html(),
-						operator: operator
-					};
-				}
-				else
-				{
-					filter_data = {
-						column: filter[0],
-						value: $('<p/>').text(filter[1]).html()
-					};
-				}
-
-				index = self.searchForFilter(filter_data);
-
-				if (index !== -1)
-				{
-					self.removeFilters(index);
-				}
-			});
-		},
-
-		/**
-		 * Exctracts the current page from the route.
-		 *
-		 * @param  string  page
-		 * @return void
-		 */
-		extractPageFromRoute: function(page)
-		{
-			var page_array = page.split(this.opt.delimiter);
-
-			if (page_array[1] === '' || page_array[1] <= 0)
-			{
-				this.pagination.page_index = 1;
-			}
-			else
-			{
-				this.pagination.page_index = parseInt(page_array[1], 10);
-			}
-		},
-
-		/**
-		 * Handles the page change from the pagination.
-		 *
-		 * @param  object  $el
-		 * @return void
-		 */
-		handlePageChange: function($el)
-		{
-			var index;
-
-			if (this.opt.method === 'infinite')
-			{
-				index = $el.data('page');
-
-				$el.data('page', ++index);
-			}
-			else
-			{
-				index = $el.data('page');
-			}
-
-			this.goToPage(index);
-
-			this.refresh();
-		},
-
-		/**
-		 * Navigates to the given page.
-		 *
-		 * @param  int  page
-		 * @return void
-		 */
-		goToPage: function(page)
-		{
-			this.pagination.page_index = isNaN(page = parseInt(page, 10)) ? 1 : page;
-		},
-
-		/**
-		 * Handles the search on submit.
-		 *
-		 * @param  object  $el
-		 * @param  bool    refresh
-		 * @return void
-		 */
-		handleSearchOnSubmit: function($el, refresh)
-		{
-			refresh = refresh !== undefined ? refresh : true;
-
-			var $input   = $el.find('input');
-			var column   = 'all';
-			var operator = $el.data('operator');
-
-			// Make sure we arn't submiting white space only
-			if ( ! $.trim($input.val()).length)
-			{
-				return;
-			}
-
-			this.is_search_active = true;
-
-			clearTimeout(search_timeout);
-
-			var search_select = $el.find('select:not([data-select-filter])');
-
-			if (search_select.length)
-			{
-				column = search_select.val();
-
-				search_select.prop('selectedIndex', 0);
-			}
-
-			// If theres a live search item with the same value
-			// we remove the live search item
-			if (this.searchForValue( $input.val(), this.applied_filters) > -1)
-			{
-				var index = this.searchForValue($input.val(), this.applied_filters);
-
-				this.applied_filters.splice(index, 1);
-			}
-
-			this.applyFilter({
-				column: column,
-				value: $('<p/>').text($input.val()).html(),
-				operator: operator
-			});
-
-			// Clear results for infinite grids
-			if (this.opt.method === 'infinite')
-			{
-				this.$results.empty();
-			}
-
-			// Reset
-			$input.val('').data('old', '');
-
-			if (refresh)
-			{
-				this.goToPage(1);
-				this.refresh();
-			}
-		},
-
-		/**
-		 * Handles the live search.
-		 *
-		 * @param  object  $el
-		 * @return void
-		 */
-		handleLiveSearch: function($el)
-		{
-			var column   = 'all';
-			var self     = this;
-			var operator = $el.data('operator');
-
-			if (is_search_active)
-			{
-				return;
-			}
-
-			clearTimeout(search_timeout);
-
-			search_timeout = setTimeout(function()
-			{
-				var search_select = $el.find('select:not([data-select-filter])');
-
-				if (search_select.length)
-				{
-					column = search_select.val();
-				}
-
-				var $input = $el.find('input'),
-					curr = $input.val(),
-					old = $input.data('old');
-
-				// Remove the old term from the applied filters
-				for (var i = 0; i < self.applied_filters.length; i++)
-				{
-					if (self.applied_filters[i].value === old && self.applied_filters[i] !== undefined && old !== undefined)
-					{
-						self.applied_filters.splice(i, 1);
-					}
-				}
-
-				if (curr.length > 0)
-				{
-					self.applyFilter({
-						column: column,
-						value: $('<p/>').text(curr).html(),
-						type: 'live',
-						operator: operator
-					});
-				}
-
-				// Clear results for infinite grids
-				if (self.opt.method === 'infinite')
-				{
-					self.$results.empty();
-				}
-
-				$input.data('old', curr);
-
-				self.goToPage(1);
-
-				self.refresh();
-
-			}, this.opt.search_timeout);
-		},
-
-		/**
-		 * Sets the sort direction on the given element.
-		 *
-		 * @param  object  $el
-		 * @param  string  direction
-		 * @return void
-		 */
-		setSortDirection: function($el, direction)
-		{
-			$(this).trigger('dg:sorting', this);
-
-			var grid             = this.grid;
-			var options          = this.opt;
-			var $search_elements = $('[data-sort]' + grid + ',' + grid + ' [data-sort]');
-			var ascClass         = options.sort_classes.asc;
-			var descClass        = options.sort_classes.desc;
-			var remove           = direction === 'asc' ? descClass : ascClass;
-			var add              = direction === 'asc' ? ascClass : descClass;
-
-			// Remove All Classes from other sorts
-			$search_elements.not($el).removeClass(ascClass);
-			$search_elements.not($el).removeClass(descClass);
-
-			$el.removeClass(remove);
-			$el.addClass(add);
-
-			$(this).trigger('dg:sorted', this);
-		},
-
-		/**
-		 * Extracts range filters
-		 *
-		 * @param  object  $filter
-		 * @return void
-		 */
-		extractRangeFilters: function($filter)
-		{
-			this.default_filters = [];
-
-			var current_filter = $filter.find('[data-range-filter]').data('range-filter') || $filter.data('range-filter');
-			var $start_filter  = this.$body.find('[data-range-start][data-range-filter="' + current_filter + '"]' + this.grid + ',' + this.grid + ' [data-range-start][data-range-filter="' + current_filter + '"]');
-			var $end_filter    = this.$body.find('[data-range-end][data-range-filter="' + current_filter + '"]' + this.grid + ',' + this.grid + ' [data-range-end][data-range-filter="' + current_filter + '"]');
-
-			var start_range_filter = $start_filter.data('range-filter');
-			var start_val          = $start_filter.val();
-			var end_val            = $end_filter.val();
-			var start_label        = $start_filter.data('label');
-			var date_format        = $start_filter.data(this.opt.date_format_attribute);
-			var from               = start_val;
-			var to                 = end_val;
-			var filter_data;
-
-			if (date_format !== null && date_format !== undefined && window.moment !== undefined)
-			{
-				from = moment(from).format(db_date_format);
-				to   = moment(to).format(db_date_format);
-			}
-
-			filter_data = {
-				column: start_range_filter,
-				from: from,
-				to: to,
-				label: start_label,
-				type: 'ranges'
-			};
-
-			this.applyFilter(filter_data);
-		},
-
-		/**
-		 * Extracts filters from element.
-		 *
-		 * @param  object  $filter
-		 * @param  bool    refresh
-		 * @return void
-		 */
-		extractFilters: function($filter, refresh)
-		{
-			refresh = refresh !== undefined ? refresh : true;
-
-			this.default_filters = [];
-
-			if ($filter.data('reset') !== undefined || $filter.data('filter-reset') !== undefined)
-			{
-				this.reset();
-			}
-			else if ($filter.parent().data('reset') !== undefined || $filter.parent().data('filter-reset') !== undefined)
-			{
-				this.removeGroupFilters($filter.parent());
-			}
-			else if ($filter.parent().parent().data('reset') !== undefined || $filter.parent().parent().data('filter-reset') !== undefined)
-			{
-				this.removeGroupFilters($filter.parent().parent());
-			}
-
-			if ( ! $filter.data('filter'))
-			{
-				if (refresh)
-				{
-					this.goToPage(1);
-					this.refresh();
-				}
-
-				return;
-			}
-
-			var filters_array = $filter.data('filter').split(', ');
-			var labels        = $filter.data('label');
-			var filter;
-			var operator;
-			var filter_data;
-			var labels_array;
-			var label;
-			var terms_count;
-
-			for (var i = 0; i < filters_array.length; i++)
-			{
-				filter = filters_array[i].split(':');
-				terms_count = filters_array[i].match(/:/g).length;
-
-				if (this.checkOperator(filters_array[i]))
-				{
-					operator = filter[1];
-
-					filter.splice(1, 1);
-				}
-
-				filter_data = {
-					column: filter[0],
-					value: $('<p/>').text(filter[1]).html(),
-					operator: operator
-				};
-
-				if (this.searchForFilter(filter_data) !== -1)
-				{
-					continue;
-				}
-
-				if (labels !== undefined)
-				{
-					labels_array = labels.split(', ');
-
-					if (labels_array[i] !== undefined)
-					{
-						label = labels_array[i].split(':');
-					}
-
-					if (terms_count === 2 && operator === undefined)
-					{
-						filter_data = {
-							column: filter[0],
-							from: filter[1],
-							to: filter[2],
-							col_mask: label[1],
-							val_mask: label[2],
-							type: 'range'
-						};
-					}
-					else if (terms_count === 2 && operator !== undefined)
-					{
-						filter_data = {
-							column: filter[0],
-							value: $('<p/>').text(filter[1]).html(),
-							col_mask: label[1],
-							val_mask: label[2],
-							operator: operator
-						};
-					}
-					else
-					{
-						filter_data = {
-							column: filter[0],
-							value: $('<p/>').text(filter[1]).html(),
-							col_mask: label[1],
-							val_mask: label[2],
-							operator: operator
-						};
-					}
-
-					if ($filter.data('filter-default') === undefined)
-					{
-						this.applyFilter(filter_data);
-					}
-					else
-					{
-						this.applyDefaultFilter(filter_data);
-					}
-
-				}
-				else
-				{
-					if (terms_count === 2 && operator === undefined)
-					{
-						filter_data = {
-							column: filter[0],
-							from: filter[1],
-							to: filter[2],
-							type: 'range'
-						};
-					}
-					else if (terms_count === 2 && operator !== undefined)
-					{
-						filter_data = {
-							column: filter[0],
-							value: $('<p/>').text(filter[1]).html(),
-							operator: operator
-						};
-					}
-					else
-					{
-						filter_data = {
-							column: filter[0],
-							value: $('<p/>').text(filter[1]).html(),
-							operator: operator
-						};
-					}
-
-					if ($filter.data('filter-default') === undefined)
-					{
-						this.applyFilter(filter_data);
-					}
-					else
-					{
-						this.applyDefaultFilter(filter_data);
-					}
-				}
-			}
-
-			if (refresh)
-			{
-				this.goToPage(1);
-				this.refresh();
-			}
-		},
-
-		/**
-		 * Extracts sorts from click.
-		 *
-		 * @param  object  $el
-		 * @return void
-		 */
-		extractSortsFromClick: function($el)
-		{
-			var sort_array = $el.data('sort').split(':');
-			var direction  = 'asc';
-
-			// Reset page for infinite grids
-			if (this.opt.method === 'infinite')
-			{
-				this.goToPage(1);
-			}
-
-			if (this.current_sort.column === sort_array[0] && this.current_sort.index < 3 && this.current_sort.column !== this.opt.sort.column)
-			{
-				this.current_sort.index++;
-			}
-			else
-			{
-				if (sort_array[0] !== this.default_column && this.default_column !== '')
-				{
-					this.current_sort.index = 1;
-				}
-				else
-				{
-					this.current_sort.index = 3;
-				}
-			}
-
-			if (sort_array[0] === this.default_column && this.default_column !== '')
-			{
-				this.current_sort.index = 1;
-			}
-
-			if (typeof sort_array[1] !== 'undefined')
-			{
-				direction = sort_array[1];
-			}
-
-			if (sort_array[0] === this.current_sort.column)
-			{
-				if (this.current_sort.direction === 'asc' && this.current_sort.index !== 3)
-				{
-					this.current_sort.direction = 'desc';
-				}
-				else if (this.current_sort.index !== 3)
-				{
-					this.current_sort.direction = 'asc';
-				}
-				else
-				{
-					this.current_sort.direction = '';
-				}
-			}
-			else if (sort_array[0] === this.default_column && this.default_column !== '')
-			{
-				this.current_sort.column = this.default_column;
-
-				this.current_sort.direction = this.default_direction === 'asc' ? 'desc' : 'asc';
-			}
-			else
-			{
-				this.current_sort.column = sort_array[0];
-
-				this.current_sort.direction = direction;
-			}
-		},
-
-		/**
-		 * Extracts filters from route.
-		 *
-		 * @param  array  route_array
-		 * @return void
-		 */
-		extractFiltersFromRoute: function(route_array)
-		{
-			var self = this;
-			var grid = this.grid;
-
-			route_array = route_array.splice(1);
-
-			this.applied_filters = [];
-
-			for (var i = 0; i < route_array.length; i++)
-			{
-				var $filter     = $('[data-filter*="' + route_array[i] + '"]' + grid + ',' + grid + ' [data-filter*="' + route_array[i] + '"]');
-				var filter      = route_array[i].split(':');
-				var terms_count = route_array[i].match(/:/g).length;
-				var label;
-
-				if ( ! $filter.length && terms_count === 2 && filter.length === 3)
-				{
-					// Range filters
-					var $start_filter = this.$body.find('[data-range-start][data-range-filter="' + filter[0] + '"]' + grid + ',' + grid + ' [data-range-start][data-range-filter="' + filter[0] + '"]');
-					var $end_filter   = this.$body.find('[data-range-end][data-range-filter="' + filter[0] + '"]' + grid + ',' + grid + ' [data-range-end][data-range-filter="' + filter[0] + '"]');
-					var date_format    = $start_filter.data(this.opt.date_format_attribute);
-
-					if (window.moment !== undefined && date_format !== undefined)
-					{
-						$start_filter.val(moment(filter[1]).format(date_format));
-						$end_filter.val(moment(filter[2]).format(date_format));
-					}
-					else
-					{
-						$start_filter.val(filter[1]);
-						$end_filter.val(filter[2]);
-					}
-
-					self.rangeFilter($start_filter, false);
-				}
-				else if ((terms_count === 1 || terms_count === 2) && ! $filter.length)
-				{
-					// Search
-					var $search = $('[data-search]' + grid).length > 0 ? $('[data-search]' + grid) : $(grid + ' [data-search]');
-					var input_val = filter[filter.length - 1];
-
-					$search.find('[value="' + filter[0] + '"]').prop('selected', true);
-					$search.find('input').val(input_val);
-
-					self.handleSearchOnSubmit($search, false);
-				}
-				else
-				{
-					// Select drop down filters
-					if ($filter.prop('tagName') === 'OPTION')
-					{
-						$filter.prop('selected', true);
-					}
-
-					// All other filters
-					filter      = $filter.data('filter');
-					label       = $filter.data('label');
-					terms_count = filter.match(/:/g).length;
-					filter      = filter.split(':');
-
-					var $filter_clone = $filter.clone();
-
-					$filter_clone.attr('data-filter', route_array[i]);
-
-					if ($filter.data('label'))
-					{
-						label = label.split(', ');
-					}
-
-					var data_label = '';
-
-					if (label !== undefined)
-					{
-						for(var j = 0; j < label.length; j++)
-						{
-							var label_array  = label[j].split(':'),
-								filter_array = route_array[i].split(':');
-
-							if (label_array[0] === filter_array[0])
-							{
-								data_label = label[j];
-
-								break;
-							}
-						}
-					}
-
-					$filter_clone.attr('data-label', data_label);
-
-					data_label = '';
-
-					self.extractFilters($filter_clone, false);
-				}
-			}
-		},
-
-		/**
-		 * Search for the given value.
-		 *
-		 * @param  string  key
-		 * @param  array   arr
-		 * @return int
-		 */
-		searchForValue: function(key, arr)
-		{
-			for (var i = 0; i < arr.length; i++)
-			{
-				if ((arr[i].value === key) || (arr[i].mask_original === key))
-				{
-					return i;
-				}
-			}
-
-			return -1;
-		},
-
-		/**
-		 * Search for the given filter.
-		 *
-		 * @param  object  filter
-		 * @return int
-		 */
-		searchForFilter: function(filter)
-		{
-			var filters = this.applied_filters;
-
-			for (var i = 0; i < filters.length; i++)
-			{
-				if (filters[i].value    === filter.value &&
-					filters[i].operator === filter.operator &&
-					(filters[i].column  === filter.column || filters[i].mask_original === filter.column) &&
-					filters[i].type     === filter.type &&
-					filters[i].from     === filter.from &&
-					filters[i].to       === filter.to)
-				{
-					return i;
-				}
-			}
-
-			return -1;
-		},
-
-		/**
-		 * Returns the item index from an array.
-		 *
-		 * @param  array   array
-		 * @param  string  item
-		 * @return int
-		 */
-		_indexOf: function(array, item)
-		{
-			if (this.checkIE() < 9)
-			{
-				if (array === null)
-				{
-					return -1;
-				}
-
-				for (var i = 0; i < array.length; i++)
-				{
-					if (array[i] === item)
-					{
-						return i;
-					}
-				}
-
-				return -1;
-			}
-
-			return array.indexOf(item);
-		},
-
-		/**
-		 * Extracts sorts from route.
-		 *
-		 * @param  string  sort
-		 * @return void
-		 */
-		extractSortsFromRoute: function(sort)
-		{
-			sort = sort.split(this.opt.delimiter);
-
-			var column    = sort[0];
-			var direction = sort[1];
-
-			// Setup Sort and put index at 1
-			if (this.current_sort.column !== column)
-			{
-				this.current_sort.index = 1;
-			}
-
-			this.current_sort.column = column;
-
-			this.current_sort.direction = direction;
-		},
-
-		/**
-		 * Extracts threshold from route.
-		 *
-		 * @param  string  threshold
-		 * @return void
-		 */
-		extractThresholdFromRoute: function(threshold)
-		{
-			threshold = threshold.split(this.opt.delimiter);
-
-			threshold = threshold[1];
-
-			this.setThreshold(threshold);
-		},
-
-		/**
-		 * Extracts throttle from route.
-		 *
-		 * @param  string  throttle
-		 * @return void
-		 */
-		extractThrottleFromRoute: function(throttle)
-		{
-			throttle = throttle.split(this.opt.delimiter);
-
-			throttle = throttle[1];
-
-			this.setThrottle(throttle);
-		},
-
-		/**
-		 * Build page fragment.
-		 *
-		 * @return string
-		 */
-		buildPageFragment: function()
-		{
-			if (this.pagination.page_index !== 1 && this.opt.method !== 'infinite')
-			{
-				return '/page' + this.opt.delimiter + this.pagination.page_index + '/';
-			}
-
-			return;
-		},
-
-		/**
-		 * Build filter fragment.
-		 *
-		 * @return string
-		 */
-		buildFilterFragment: function()
-		{
-			var filter_fragment = '';
-			var delimiter       = this.opt.delimiter;
-			var filters         = [];
-
-			_.each(this.default_filters, function(filter)
-			{
-				filters.push(filter);
-			});
-
-			_.each(this.applied_filters, function(filter)
-			{
-				filters.push(filter);
-			});
-
-			for (var i = 0; i < filters.length; i++)
-			{
-				var index = filters[i];
-
-				if (index.type !== 'live')
-				{
-					var parsed_value = $('<p/>').html(index.value).text();
-
-					if (index.mask === 'column')
-					{
-						if (index.operator !== '' && index.operator !== undefined)
-						{
-							filter_fragment += '/' + index.mask_original + delimiter + index.operator + delimiter + parsed_value;
-						}
-						else
-						{
-							filter_fragment += '/' + index.mask_original + delimiter + parsed_value;
-						}
-					}
-					else if (index.mask === 'value')
-					{
-						if (index.operator !== '' && index.operator !== undefined)
-						{
-							filter_fragment += '/' + index.mask_original + delimiter + index.operator + delimiter + parsed_value;
-						}
-						else
-						{
-							filter_fragment += '/' + index.column + delimiter + index.mask_original;
-						}
-					}
-					else if (index.type === 'range' || index.type === 'ranges')
-					{
-						filter_fragment += '/' + index.column + delimiter + index.from + delimiter + index.to;
-					}
-					else if (index.operator !== undefined && index.operator !== '')
-					{
-						filter_fragment += '/' + index.column + delimiter + index.operator + delimiter + parsed_value;
-					}
-					else
-					{
-						filter_fragment += '/' + index.column + delimiter + parsed_value;
-					}
-				}
-			}
-
-			return filter_fragment + '/';
-		},
-
-		/**
-		 * Build sort fragment.
-		 *
-		 * @return string
-		 */
-		buildSortFragment: function()
-		{
-			var sortFragment = '';
-
-			var currentColumn = this.current_sort.column;
-
-			var currentDirection = this.current_sort.direction;
-
-			if (currentColumn !== null && currentDirection !== '')
-			{
-				if (currentColumn !== this.opt.sort.column || currentDirection !== this.opt.sort.direction)
-				{
-					sortFragment += '/' + currentColumn + this.opt.delimiter + currentDirection;
-
-					return sortFragment + '/';
-				}
-			}
-
-			return '/';
-		},
-
-		/**
-		 * Build throttle fragment.
-		 *
-		 * @return string
-		 */
-		buildThrottleFragment: function()
-		{
-			if (defaults.throttle !== this.opt.throttle && this.opt.throttle)
-			{
-				return '/throttle' + this.opt.delimiter + this.opt.throttle + '/';
-			}
-
-			return '/';
-		},
-
-		/**
-		 * Build threshold fragment.
-		 *
-		 * @return string
-		 */
-		buildThresholdFragment: function()
-		{
-			if (defaults.threshold !== this.opt.threshold && this.opt.threshold)
-			{
-				return '/threshold' + this.opt.delimiter + this.opt.threshold + '/';
-			}
-
-			return '/';
-		},
-
-		/**
-		 * Grabs all the results from the server.
-		 *
-		 * @return void
-		 */
-		fetchResults: function()
-		{
-			$(this).trigger('dg:fetching', this);
-
-			var self = this;
-
-			this.showLoader();
-
-			$.ajax({
-				url: self.source,
-				dataType : 'json',
-				data: self.buildAjaxURI()
-			})
-			.done(function(response)
-			{
-				if (self.opt.cache_response)
-				{
-					self.response = response;
-				}
-
-				if ( ! self.opt.throttle)
-				{
-					defaults.throttle = response.throttle;
-				}
-
-				if ( ! self.opt.threshold)
-				{
-					defaults.threshold = response.threshold;
-				}
-
-				if (self.pagination.page_index > response.pages)
-				{
-					self.pagination.page_index = response.pages;
-
-					self.refresh();
-
-					return false;
-				}
-
-				self.pagination.filtered = response.filtered;
-
-				self.pagination.total = response.total;
-				// Keep infinite results to append load more
-				if (self.opt.method !== 'infinite')
-				{
-					self.$results.empty();
-				}
-
-				if (self.opt.method === 'single' || self.opt.method === 'group')
-				{
-					self.$results.html(self.tmpl.results(response));
-				}
-				else
-				{
-					self.$results.append(self.tmpl.results(response));
-				}
-
-				self.$pagination.html(self.tmpl.pagination(self.buildPagination(response)));
-
-				self.pagination.pages = response.pages;
-
-				if ( ! response.results.length)
-				{
-					self.$results.html(self.tmpl.empty_results());
-				}
-
-				if ( ! self.applied_filters.length)
-				{
-					self.$filters.html(self.tmpl.empty_filters());
-				}
-
-				if (response.sort !== '')
-				{
-					var sortEl = $('[data-sort^="' + response.sort + '"]' + self.grid + ',' + self.grid + ' [data-sort="' + response.sort + '"]');
-
-					if (self.buildSortFragment() !== '/')
-					{
-						self.current_sort.column = response.sort;
-						self.current_sort.direction = response.direction;
-					}
-
-					if (self.opt.sort.column === undefined)
-					{
-						self.default_column = response.default_column;
-						self.default_direction = response.direction;
-					}
-
-					self.setSortDirection(sortEl, response.direction);
-				}
-
-				self.hideLoader();
-
-				$(self).trigger('dg:hashchange');
-
-				self.callback();
-
-				$(self).trigger('dg:fetched', self);
-			})
-			.error(function(jqXHR, textStatus, errorThrown)
-			{
-
-				console.error('fetchResults ' + jqXHR.status, errorThrown);
-
-			});
-		},
-
-		/**
-		 * Builds the ajax uri.
-		 *
-		 * @return string
-		 */
-		buildAjaxURI: function(download)
-		{
-			var self = this,
-				params = {},
-				from,
-				to;
-
-			params.filters   = [];
-			params.page      = this.pagination.page_index;
-			params.method    = this.opt.method;
-
-			if (this.opt.threshold)
-			{
-				params.threshold = this.opt.threshold ? this.opt.threshold : defaults.threshold;
-			}
-
-			if (this.opt.throttle)
-			{
-				params.throttle = this.opt.throttle ? this.opt.throttle : defaults.throttle;
-			}
-
-			var filters = [];
-
-			_.each(this.default_filters, function(filter)
-			{
-				filters.push(filter);
-			});
-
-			_.each(this.applied_filters, function(filter)
-			{
-				filters.push(filter);
-			});
-
-			for (var i = 0; i < filters.length; i++)
-			{
-				var filter = {};
-
-				if ('mask' in filters[i])
-				{
-					if (filters[i].mask === 'column')
-					{
-						if (filters[i].operator !== undefined && filters[i].operator !== '')
-						{
-							filter[filters[i].mask_original] =
-								'|' +
-								filters[i].operator +
-								$('<p/>').html(filters[i].value).text() +
-								'|';
-						}
-						else if (filters[i].type === 'range' || index.type === 'ranges')
-						{
-							if (window.moment !== undefined)
-							{
-								from = moment(filters[i].from).startOf('day').format(db_timestamp_format);
-								to   = moment(filters[i].to).endOf('day').format(db_timestamp_format);
-							}
-							else
-							{
-								from = filters[i].from;
-								to   = filters[i].to;
-							}
-
-							filter[filters[i].mask_original] = '|' + '>=' + from + '|' + '<=' + to +'|';
-						}
-						else
-						{
-							filter[filters[i].mask_original] = $('<p/>').html(filters[i].value).text();
-						}
-
-						params.filters.push(filter);
-					}
-					else
-					{
-						if (filters[i].column === 'all')
-						{
-							params.filters.push(filters[i].mask_original);
-						}
-						else
-						{
-							if (filters[i].operator !== undefined && filters[i].operator !== null)
-							{
-								filter[filters[i].column] = '|' + filters[i].operator + filters[i].mask_original + '|';
-								params.filters.push(filter);
-							}
-							else
-							{
-								filter[filters[i].column] = filters[i].mask_original;
-								params.filters.push(filter);
-							}
-						}
-					}
-				}
-				else
-				{
-					if (filters[i].column === 'all')
-					{
-						if (filters[i].operator !== undefined && filters[i].operator !== '')
-						{
-							filter =
-								'|' +
-								filters[i].operator +
-								$('<p/>').html(filters[i].value).text() +
-								'|';
-						}
-						else
-						{
-							filter = $('<p/>').html(filters[i].value).text();
-						}
-
-						params.filters.push(filter);
-					}
-					else
-					{
-						if (filters[i].operator !== undefined && filters[i].operator !== '')
-						{
-							var value = filters[i].value;
-
-							if (self.checkDate(value) && window.moment !== undefined)
-							{
-								if (filters[i].operator === '>=')
-								{
-									value = moment(value).startOf('day').format(db_timestamp_format);
-								}
-								else if (filters[i].operator === '<=')
-								{
-									value = moment(value).endOf('day').format(db_timestamp_format);
-								}
-							}
-
-							filter[filters[i].column] =
-								'|' +
-								filters[i].operator +
-								$('<p/>').html(value).text() +
-								'|';
-						}
-						else if (filters[i].type === 'range' || filters[i].type === 'ranges')
-						{
-							if (window.moment !== undefined && self.checkDate(filters[i].from))
-							{
-								from = moment(filters[i].from).startOf('day').format(db_timestamp_format);
-								to   = moment(filters[i].to).endOf('day').format(db_timestamp_format);
-							}
-							else
-							{
-								from = filters[i].from;
-								to   = filters[i].to;
-							}
-
-							filter[filters[i].column] = '|' + '>=' + from + '|' + '<=' + to +'|';
-						}
-						else
-						{
-							filter[filters[i].column] = $('<p/>').html(filters[i].value).text();
-						}
-
-						params.filters.push(filter);
-					}
-				}
-			}
-
-			if (this.current_sort.column !== '' && this.current_sort.direction !== '')
-			{
-				params.sort = this.current_sort.column;
-				params.direction = this.current_sort.direction;
-			}
-			else if (this.opt.sort.column !== undefined && this.opt.sort.direction !== undefined)
-			{
-				params.sort = this.opt.sort.column;
-				params.direction = this.opt.sort.direction;
-			}
-
-			if (download)
-			{
-				params.download = download;
-			}
-
-			return $.param(params);
-		},
-
-		/**
-		 * Builds the pagination.
-		 *
-		 * @param  object  json
-		 * @return object
-		 */
-		buildPagination: function(json)
-		{
-			var self  = this;
-			var page  = json.page;
-			var next  = json.next_page;
-			var prev  = json.previous_page;
-			var total = json.pages;
-			var rect;
-
-			switch (this.opt.method)
-			{
-				case 'single':
-				case 'group':
-
-					rect = self.buildRegularPagination(page, next, prev, total);
-
-					break;
-
-				case 'infinite':
-
-					rect = self.buildInfinitePagination(page, next, total);
-
-					break;
-			}
-
-			return rect;
-		},
-
-		/**
-		 * Builds regular pagination.
-		 *
-		 * @param  int  page
-		 * @param  int  next
-		 * @param  int  prev
-		 * @param  int  total
-		 * @return object
-		 */
-		buildRegularPagination: function(page, next, prev, total)
-		{
-			var params;
-			var per_page;
-			var page_limit;
-			var rect = [];
-
-			per_page = this.calculatePagination();
-
-			if (this.opt.threshold > this.pagination.filtered)
-			{
-				page_limit = this.pagination.filtered;
-			}
-			else
-			{
-				if (this.pagination.page_index === 1)
-				{
-					page_limit = per_page > this.pagination.filtered ? this.pagination.filtered : per_page;
-				}
-				else
-				{
-					page_limit = this.pagination.total < (per_page * this.pagination.page_index) ? this.pagination.filtered : (per_page * this.pagination.page_index);
-				}
-			}
-
-			params = {
-				page_start: per_page === 0 ? 0 : ( this.pagination.page_index === 1 ? this.pagination.filtered > 0 ? 1 : 0 : ( per_page * (this.pagination.page_index - 1 ) + 1)),
-				page_limit: page_limit,
-				next_page: next,
-				previous_page: prev,
-				page: page,
-				active: true,
-				pages: total,
-				total: this.pagination.total,
-				filtered: this.pagination.filtered,
-				throttle: this.opt.throttle ? this.opt.throttle : defaults.throttle,
-				threshold: this.opt.threshold ? this.opt.threshold : defaults.threshold,
-				per_page: per_page
-			};
-
-			rect.push(params);
-
-			return { pagination: rect };
-		},
-
-		/**
-		 * Builds the infinite pagination.
-		 *
-		 * @param  int  page
-		 * @param  int  next
-		 * @param  int  total
-		 * @return object
-		 */
-		buildInfinitePagination: function(page, next, total)
-		{
-			var params,
-				rect = [];
-
-			params = {
-				page: page,
-				total: total,
-				infinite: true
-			};
-
-			rect.push(params);
-
-			if (next === null)
-			{
-				return { pagination: null };
-			}
-
-			return { pagination: rect };
-		},
-
-		/**
-		 * Calculate results per page.
-		 *
-		 * @return int
-		 */
-		calculatePagination: function()
-		{
-			switch (this.opt.method)
-			{
-				case 'single':
-				case 'infinite':
-
-					return this.opt.throttle ? this.opt.throttle : defaults.throttle;
-
-				case 'group':
-
-					return Math.ceil(this.pagination.filtered / (this.opt.throttle ? this.opt.throttle : defaults.throttle));
-			}
-		},
-
-		/**
-		 * Removes a range filter.
-		 *
-		 * @param  object  filter
-		 * @return void
-		 */
-		removeRangeFilters: function(filter)
-		{
-			var rangeStart = filter.find('[data-range-start]').data('range-filter') || filter.data('range-filter'),
-				rangeEned  = filter.find('[data-range-end]').data('range-filter') || filter.data('range-filter');
-
-			for (var i = 0; i < this.applied_filters.length; i++)
-			{
-				if (this.applied_filters[i].type === 'ranges' && (this.applied_filters[i].column === rangeStart || this.applied_filters[i].column === rangeEned))
-				{
-					this.removeFilters(i);
-				}
-			}
-		},
-
-		/**
-		 * Applies a range filter.
-		 *
-		 * @param  object  filter
-		 * @param  bool    refresh
-		 * @return void
-		 */
-		rangeFilter: function(filter, refresh)
-		{
-			refresh = refresh !== undefined ? refresh : true;
-
-			var current_filter     = filter.find('[data-range-filter]').data('range-filter') || filter.data('range-filter'),
-				$start_filter = this.$body.find('[data-range-start][data-range-filter^="' + current_filter + '"]' + this.grid + ',' + this.grid + ' [data-range-start][data-range-filter="' + current_filter + '"]'),
-				$end_filter   = this.$body.find('[data-range-end][data-range-filter^="' + current_filter + '"]' + this.grid + ',' + this.grid + ' [data-range-end][data-range-filter="' + current_filter + '"]');
-
-			var start_val = $start_filter.val(),
-				end_val   = $end_filter.val();
-
-			if (start_val && end_val)
-			{
-				this.extractRangeFilters(filter);
-
-				if (refresh)
-				{
-					this.goToPage(1);
-					this.refresh();
-				}
-			}
-		},
-
-		/**
-		 * Shows the loading bar.
-		 *
-		 * @return void
-		 */
-		showLoader: function()
-		{
-			var grid   = this.grid,
-				loader = this.opt.loader;
-
-			if (this.opt.loader_class)
-			{
-				this.$body.find(grid + loader + ',' + grid + ' ' + loader).addClass(this.opt.loader_class);
-			}
-
-			this.$body.find(grid + loader + ',' + grid + ' ' + loader).finish();
-		},
-
-		/**
-		 * Hides the loading bar.
-		 *
-		 * @return void
-		 */
-		hideLoader: function()
-		{
-			var grid   = this.grid,
-				loader = this.opt.loader;
-
-			if (this.opt.loader_class)
-			{
-				this.$body.find(grid + loader + ',' + grid + ' ' + loader).removeClass(this.opt.loader_class);
-			}
-
-			this.$body.find(grid + loader + ',' + grid + ' ' + loader).finish();
-		},
-
-		/**
-		 * Resets Data Grid.
-		 *
-		 * @return void
-		 */
-		reset: function()
-		{
-			var grid    = this.grid;
-			var options = this.opt;
-
-			// Elements
-			this.$body.find('[data-sort]'+ grid).removeClass(options.sort_classes.asc);
-			this.$body.find('[data-sort]'+ grid).removeClass(options.sort_classes.desc);
-			this.$body.find('[data-search]'+ grid).find('input').val('');
-			this.$body.find('[data-search]'+ grid).find('select').prop('selectedIndex', 0);
-			this.$body.find('[data-range-filter]' + grid + ',' + grid +' [data-range-filter]').find('input').val('');
-			this.$body.find('[data-select-filter]' + grid + ',' + grid +' [data-select-filter]').find(':eq(0)').prop('selected', true);
-
-			// Filters
-			this.applied_filters = [];
-			this.default_filters = [];
-
-			// Sort
-			this.current_sort.index = 0;
-			this.current_sort.direction = '';
-			this.current_sort.column = '';
-
-			// Pagination
-			this.pagination.page_index = 1;
-
-			// Remove all rendered content
-			this.$filters.html(this.tmpl.empty_filters());
-
-			if (this.opt.method === 'infinite')
-			{
-				this.$results.empty();
-			}
-		},
-
-		/**
-		 * Refreshes Data Grid
-		 *
-		 * @return void
-		 */
-		refresh: function()
-		{
-			$(this).trigger('dg:update');
-		},
-
-		/**
-		 * Data grid callback.
-		 *
-		 * @return void
-		 */
-		callback: function()
-		{
-			var self = this;
-
-			var callback = this.opt.callback;
-
-			if (callback !== undefined && $.isFunction(callback))
-			{
-				callback(self);
-			}
-		},
-
-		/**
-		 * Applies the scroll feature animation.
-		 *
-		 * @return void
-		 */
-		applyScroll: function()
-		{
-			var _scroll = this.opt.scroll;
-
-			if (_scroll !== undefined && $.isFunction(_scroll))
-			{
-				_scroll();
-			}
-
-			else if (_scroll)
-			{
-				$(document.body).animate({ scrollTop: $(_scroll).offset().top }, 200);
-			}
-		},
-
-		/**
-		 * Check for operators.
-		 *
-		 */
-		checkOperator: function(value)
-		{
-			return />|<|!=|=|<=|>=|<>/.test(value);
-		},
-
-		/**
-		 * Check for date.
-		 *
-		 */
-		checkDate: function(value)
-		{
-			return /[0-9]{4}-[0-9]{2}-[0-9]{2}/g.test(value);
-		},
-
-		/**
-		 * Sets the scroll value.
-		 *
-		 * @param  string  element
-		 * @return void
-		 */
-		setScroll: function(element)
-		{
-			this.opt.scroll = element;
-		},
-
-		/**
-		 * Returns the throttle.
-		 *
-		 * @return int
-		 */
-		getThrottle: function()
-		{
-			return this.opt.throttle;
-		},
-
-		/**
-		 * Sets the throttle.
-		 *
-		 * @param  int  value
-		 * @return void
-		 */
-		setThrottle: function(value)
-		{
-			this.opt.throttle = value;
-		},
-
-		/**
-		 * Returns the threshold.
-		 *
-		 * @return int
-		 */
-		getThreshold: function()
-		{
-			return this.opt.threshold;
-		},
-
-		/**
-		 * Sets the threshold.
-		 *
-		 * @param  int  value
-		 * @return void
-		 */
-		setThreshold: function(value)
-		{
-			this.opt.threshold = value;
-		},
-
-	};
-
-	/**
-	 * Data grid init.
-	 *
-	 * @param  string  grid
-	 * @param  string  results
-	 * @param  string  pagination
-	 * @param  string  filters
-	 * @param  object  options
-	 * @return DataGrid
-	 */
-	$.datagrid = function(grid, results, pagination, filters, options)
-	{
-		return new DataGrid(grid, results, pagination, filters, options);
-	};
-
-	/**
-	 * Data grid prototype
-	 *
-	 * @type object
-	 */
-	$.datagrid.prototype = DataGrid.prototype;
-
-})(jQuery, window, document);
+!function(global) {
+  'use strict';
+
+  /**
+   * Creates a new DataGridManager.
+   *
+   * @param {Object} options
+   * @return void
+   */
+  function DataGridManager(options) {
+    this.defaults = {
+
+      url: {
+        hash: true,
+        semantic: false,
+        base: '',
+      },
+
+    };
+
+    this.grids = [];
+    this.opt = _.assign(this.defaults);
+    this.currentHash = null;
+
+    _.each(_.keys(options), _.bind(function(key) {
+      this.opt[key] = _.defaults(options[key], this.defaults[key]);
+    }, this));
+
+    this._checkDependencies();
+
+    this.backbone = Backbone.noConflict();
+
+    _.defer(_.bind(this._init, this));
+  }
+
+  /**
+   * Initializes the DataGridManager.
+   *
+   * @return {DataGridManager}
+   */
+  DataGridManager.prototype._init =
+  function _init() {
+    _.defer(_.bind(function() {
+      this
+        ._initRouter()
+        ._initGrids();
+    }, this));
+
+    return this;
+  };
+
+  /**
+   * Initializes the backbone router.
+   *
+   * @return {DataGridManager}
+   */
+  DataGridManager.prototype._initRouter =
+  function _initRouter() {
+    var routerOptions = {};
+    var Router = this.backbone.Router.extend({
+      routes: {
+        '*path': 'defaultRoute',
+      },
+
+      defaultRoute: _.bind(this._updateGrids, this),
+    });
+
+    if (this.opt.url.semantic) {
+      routerOptions = {
+        root: this.opt.url.base,
+        pushState: true,
+      };
+    }
+
+    this.router = new Router();
+
+    this.backbone.history.start(routerOptions);
+
+    return this;
+  };
+
+  /**
+   * Updates data grids.
+   *
+   * @return {DataGridManager}
+   */
+  DataGridManager.prototype._updateGrids =
+  function _updateGrids() {
+    var hash = this.backbone.history.getFragment();
+    var keys = [];
+    var separateRoutes = [];
+    var untouchedGrids = [];
+    var updatedGrids = [];
+    var routes;
+
+    _.each(this.grids, function(grid) {
+      keys.push(grid.key);
+    });
+
+    if (this.grids.length > 1) {
+      var regex = new RegExp(keys.join('\\/|') + '\\/');
+      routes = _.compact(hash.split(regex));
+      for (var i = routes.length - 1; i >= 0; i--) {
+        routes[i] = keys[i] + '/' + routes[i];
+      }
+    } else {
+      routes = [hash];
+    }
+
+    _.each(routes, function(route) {
+      separateRoutes.push(_.compact(route.split('/')));
+    });
+
+    if (this.grids.length === 1) {
+      this.grids[0]
+        .reset()
+        .applyFromRoute(separateRoutes[0])
+        .refresh();
+    } else {
+      _.each(this.grids, function(grid) {
+        if (_.isEmpty(separateRoutes)) {
+            grid.reset();
+            grid.applyDefaults();
+            grid.refresh();
+
+            updatedGrids.push(grid);
+        } else {
+            _.each(separateRoutes, function(route) {
+              if (route[0] === grid.key) {
+                grid
+                  .reset()
+                  .applyFromRoute(route)
+                  .refresh();
+
+                updatedGrids.push(grid);
+              }
+            });
+        }
+      });
+
+      untouchedGrids = _.difference(this.grids, updatedGrids);
+
+      _.each(untouchedGrids, function(grid) {
+        grid.reset();
+        grid.applyDefaults();
+        grid.refresh();
+      }, this);
+    }
+
+    return this;
+  };
+
+  /**
+   * Initializes the data grids.
+   *
+   * @return {DataGridManager}
+   */
+  DataGridManager.prototype._initGrids =
+  function _initGrids() {
+    var _this = this;
+
+    _.each(this.grids, function(grid) {
+      $(grid).on('dg:hashchange', function(event) {
+        _this._updateHash(event);
+      });
+    });
+
+    return this;
+  };
+
+  /**
+   * Updates the hash fragment.
+   *
+   * @return {DataGridManager}
+   */
+  DataGridManager.prototype._updateHash =
+  function _updateHash(event) {
+    var hashParts = [];
+    var hash;
+    var finalHash;
+
+    event.preventDefault();
+
+    if (! this.opt.url.hash) {
+      return;
+    }
+
+    _.each(this.grids, function(grid) {
+      hash = grid.buildHash();
+
+      if (hash !== grid._getBaseHash()) {
+        hashParts.push(hash);
+      }
+    });
+
+    finalHash = hashParts.join('/');
+
+    if (finalHash !== this.currentHash) {
+      this.backbone.history.navigate(finalHash, {trigger: false});
+    }
+
+    this.currentHash = finalHash;
+
+    return this;
+  };
+
+  /**
+   * Ensures dependencies are available.
+   *
+   * @return {DataGridManager}
+   */
+  DataGridManager.prototype._checkDependencies =
+  function _checkDependencies() {
+    if (typeof _ === 'undefined') {
+      throw new Error('Underscore is not defined. ' +
+        'DataGrid Requires UnderscoreJS v1.6.0 or later to run!');
+    }
+
+    if (typeof Backbone === 'undefined') {
+      throw new Error('DataGrid Requires Backbone.js v1.0.0 or later to run!');
+    }
+
+    return this;
+  };
+
+  /**
+   * Registers and creates a new data grid.
+   *
+   * @param {String} name
+   * @param {Object} options
+   * @return {DataGrid}
+   */
+  DataGridManager.prototype.create =
+  function create(name, options) {
+    var newGrid = new DataGrid(name, options, this);
+
+    this.grids.push(newGrid);
+
+    return newGrid;
+  };
+
+  /**
+   * Creates a new DataGrid.
+   *
+   * @param {String} name
+   * @param {Object} options
+   * @return {DataGrid}
+   */
+  function DataGrid(name, options, manager) {
+    this.manager = manager;
+
+    this.originalDefaults = {
+      source: null,
+
+      prefetched: false,
+
+      pagination: {
+        method: 'single',
+        threshold: null,
+        throttle: null,
+        scroll: null,
+        infiniteScroll: false,
+        scrollOffset: undefined,
+      },
+
+      cssClasses: {
+        ascClass: 'asc',
+        descClass: 'desc',
+        appliedFilter: 'selected',
+      },
+
+      sorting: {
+        column: undefined,
+        direction: undefined,
+        multicolumn: true,
+        delimiter: ','
+      },
+
+      delimiter: {
+        query: ';',
+        expression: ':',
+      },
+
+      templateSettings: {
+        evaluate: /<%([\s\S]+?)%>/g,
+        interpolate: /<%=([\s\S]+?)%>/g,
+        escape: /<%-([\s\S]+?)%>/g,
+      },
+
+      filters: {},
+
+      search: {
+        live: true,
+        timeout: 600,
+      },
+
+      loader: {
+        element: undefined,
+        showEffect: 'fadeIn',
+        hideEffect: 'fadeOut',
+        duration: 200,
+      },
+
+      formats: {
+        timestamp: 'YYYY-MM-DD HH:mm:ss',
+        serverDate: 'YYYY-MM-DD',
+        clientDate: 'MMM DD, YYYY',
+      },
+
+      callback: undefined,
+    };
+
+    this.availableFilters = {
+      term: new TermFilter(this),
+      range: new RangeFilter(this),
+      search: new SearchFilter(this),
+      live: new LiveFilter(this),
+    };
+
+    this.defaults = _.cloneDeep(this.originalDefaults);
+    this.key = name;
+    this.$body = $(document.body);
+    this.grid = this._getGridSelector();
+
+    // Options
+    this.opt = _.assign(this.defaults);
+
+    _.each(_.keys(options), _.bind(function(key) {
+      if (key === 'layouts') {
+        this.opt[key] = options[key];
+      } else {
+        this.opt[key] = _.defaults(options[key], this.defaults[key]);
+      }
+    }, this));
+
+    this.defaults.pagination = _.cloneDeep(this.opt.pagination);
+    this.originalDefaults.pagination = _.cloneDeep(this.defaults.pagination);
+
+    var $source = this._getEl(this._getSelector('source'));
+    var source = $source.data('grid-source');
+
+    if ($source.length && !_.isEmpty(source)) {
+      this.opt.source = source;
+    }
+
+    this.appliedFilters = [];
+    this.sorts = [];
+    this.initial = true;
+    this.response = null;
+    this.searchActive = false;
+    this.currentUri = null;
+    this.searchTimeout = null;
+
+    this.pagination = {
+      pageIndex: 1,
+      pages: null,
+      total: null,
+      filtered: null,
+      baseThrottle: this.opt.pagination.throttle,
+    };
+
+    _.defer(_.bind(this._init, this));
+
+    return this;
+  }
+
+  /**
+   * Initializes Data Grid.
+   *
+   * @return {DataGrid}
+   */
+  DataGrid.prototype._init =
+  function _init() {
+    this
+      ._initLayouts()
+      ._listeners();
+
+    return this;
+  };
+
+  /**
+   * Initializes layouts.
+   *
+   * @return {DataGrid}
+   */
+  DataGrid.prototype._initLayouts =
+  function _initLayouts() {
+    var layouts = this._getEl(this._getSelector('layout'));
+    var layoutName;
+
+    _.assign(_.templateSettings, this.opt.templateSettings);
+
+    this.layouts = {};
+    this.baseLayouts = {};
+
+    _.each(layouts, _.bind(function(layout) {
+      layoutName = $(layout).data('grid-layout');
+
+      this.baseLayouts[layoutName] = layoutName;
+    }, this));
+
+    this._setLayouts(this.baseLayouts);
+
+    return this;
+  };
+
+   /**
+   * Resets layouts.
+   *
+   * @return {DataGrid}
+   */
+  DataGrid.prototype._resetLayouts =
+  function _resetLayouts() {
+    _.each(_.keys(this.layouts), _.bind(function(key) {
+      this.layouts[key].layout.html('');
+    }, this));
+
+    return this;
+  };
+
+  /**
+   * Sets data grid layouts.
+   *
+   * @param {Object} options
+   * @return {DataGrid}
+   */
+  DataGrid.prototype._setLayouts =
+  function _setLayouts(options) {
+    _.each(options, _.bind(function(template, name) {
+        this.setLayout(name, template, false);
+    }, this));
+
+    return this;
+  };
+
+  /**
+   * Sets data grid layout.
+   *
+   * @param {String} name
+   * @param {String} template
+   * @param {Boolean} render
+   * @return {DataGrid}
+   */
+  DataGrid.prototype.setLayout =
+  function setLayout(name, template, render) {
+    render = render === undefined ? true : false;
+    var layouts = {};
+    var $layout;
+    var $template;
+
+    layouts[name] = template;
+    this.baseLayouts[name] = template;
+
+    _.each(_.keys(layouts), _.bind(function(key) {
+      if (_.isNull(layouts[key])) {
+        delete this.layouts[key];
+        return;
+      }
+
+      $layout = this._getEl(this._getSelector('layout', name));
+      $template = this._getEl(
+        this._getSelector('template', layouts[key])
+      );
+
+      if ($layout && $template) {
+        this.layouts[key] = {
+          layout: $layout,
+          template: _.template($template.html()),
+          action: $template.data('grid-action') || 'html'
+        };
+      }
+
+    }, this));
+
+    if (render) {
+      this._render();
+    }
+
+    return this;
+  };
+
+  /**
+   * jQuery.on wrapper for dg:event callbacks.
+   *
+   * @param {Event} event
+   * @param {Object} callback
+   * @return {DataGrid}
+   */
+  DataGrid.prototype.on =
+  function on(event, callback) {
+    if (_.isObject(event)) {
+      this._callbackListeners(event);
+    } else {
+      this._bindCallback(event, callback);
+    }
+
+    return this;
+  };
+
+  /**
+   * Applies info based on route.
+   *
+   * @param {Array} route
+   * @return {DataGrid}
+   */
+  DataGrid.prototype.applyFromRoute =
+  function applyFromRoute(route) {
+    var parsedRoute = route;
+    var lastItem;
+    var str;
+
+    lastItem = parsedRoute[(parsedRoute.length - 1)];
+
+    if (/^threshold/g.test(lastItem)) {
+      this._extractThresholdFromRoute(lastItem);
+
+      parsedRoute = parsedRoute.splice(0, (parsedRoute.length - 1));
+
+      lastItem = parsedRoute[(parsedRoute.length - 1)];
+    }
+
+    if (/^throttle/g.test(lastItem)) {
+      this._extractThrottleFromRoute(lastItem);
+
+      parsedRoute = parsedRoute.splice(0, (parsedRoute.length - 1));
+
+      lastItem = parsedRoute[(parsedRoute.length - 1)];
+    }
+
+    if (/^layout/g.test(lastItem)) {
+      this._extractLayoutFromRoute(lastItem);
+
+      parsedRoute = parsedRoute.splice(0, (parsedRoute.length - 1));
+
+      lastItem = parsedRoute[(parsedRoute.length - 1)];
+    }
+
+    if (/^page/g.test(lastItem)) {
+      this._extractPageFromRoute(lastItem);
+
+      parsedRoute = parsedRoute.splice(0, (parsedRoute.length - 1));
+
+      lastItem = parsedRoute[(parsedRoute.length - 1)];
+    } else {
+      this.pagination.pageIndex = 1;
+    }
+
+    if ((/desc$/g.test(lastItem)) || (/asc$/g.test(lastItem))) {
+      this._extractSortsFromRoute(lastItem);
+
+      // Remove sort from parsedRoute
+      parsedRoute = parsedRoute.splice(0, (parsedRoute.length - 1));
+
+      lastItem = parsedRoute[(parsedRoute.length - 1)];
+    } else if (this.opt.sorting.column && this.opt.sorting.direction) {
+      str = this.opt.sorting.column +
+        this.opt.delimiter.expression +
+        this.opt.sorting.direction;
+
+      this._extractSortsFromRoute(str);
+    }
+
+    this._extractFiltersFromRoute(parsedRoute);
+
+    return this;
+  };
+
+  /**
+   * Binds single callback.
+   *
+   * @param {Event} event
+   * @param {Object} callback
+   * @return void
+   */
+  DataGrid.prototype._bindCallback =
+  function _bindCallback(event, callback) {
+    $(this).on(event, _.bind(function() {
+      callback.apply(this, _.tail(arguments));
+    }, this));
+  };
+
+  /**
+   * Initializes filter event listeners.
+   *
+   * @return {DataGrid}
+   */
+  DataGrid.prototype._initFilters =
+  function _initFilters() {
+    _.each(_.keys(this.availableFilters), _.bind(function(type) {
+      this.availableFilters[type].init();
+    }, this));
+
+    return this;
+  };
+
+  /**
+   * Initializes custom event listeners.
+   *
+   * @return void
+   */
+  DataGrid.prototype._callbackListeners =
+  function _callbackListeners(events) {
+    if (_.isEmpty(events)) {
+      return;
+    }
+
+    _.each(_.keys(events), _.bind(function(event) {
+      this._bindCallback(event, events[event]);
+    }, this));
+  };
+
+  /**
+   * Adds listeners.
+   *
+   * @return void
+   */
+  DataGrid.prototype._listeners =
+  function _listeners() {
+    var offset;
+    var throttled;
+    var page;
+
+    $(this).on('dg:update', _.bind(this._fetchResults, this));
+
+    this._initFilters()
+      ._callbackListeners(this.opt.events);
+
+    this.$body.on('click',
+      this._getGlobalResetSelector(), _.bind(this._onGlobalReset, this)
+    );
+
+    this.$body.on('click',
+      this._getResetFilterSelector(), _.bind(this._onFilterUnapply, this)
+    );
+
+    this.$body.on('click',
+      this._getResetGroupSelector(), _.bind(this._onGroupFilterUnapply, this)
+    );
+
+    this.$body.on('click',
+      this._getPlainSortSelector(), _.bind(this._onSort, this)
+    );
+
+    this.$body.on('click',
+      this._getSelector('page'), _.bind(this._onPaginate, this)
+    );
+
+    this.$body.on('click',
+      this._getSelector('throttle'), _.bind(this._onThrottle, this)
+    );
+
+    this.$body.on('click',
+      this._getSelector('download'), _.bind(this._onDownload, this)
+    );
+
+    this.$body.on('click',
+      this._getSelector('switch-layout'), _.bind(this._onLayoutChange, this)
+    );
+
+    if (
+      this.opt.pagination.infiniteScroll &&
+      this.opt.pagination.method === 'infinite'
+    ) {
+      offset = this.opt.pagination.scrollOffset || 400;
+
+      throttled = _.throttle(_.bind(function() {
+        if (
+          $(window).scrollTop() >=
+            $(document).height() - $(window).height() - offset
+        ) {
+          page = this.pagination.pageIndex + 1;
+
+          if (page <= this.response.pages) {
+            this.goToPage(page);
+
+            this.refresh();
+          }
+        }
+      }, this), 800);
+
+      $(window).scroll(throttled);
+    }
+  };
+
+  /**
+   * Handles global resets.
+   *
+   * @param {Event} event
+   * @return void
+   */
+  DataGrid.prototype._onGlobalReset =
+  function _onGlobalReset(event) {
+    event.preventDefault();
+
+    this.reset();
+
+    this.refresh();
+  };
+
+  /**
+   * Handles applied filter removal.
+   *
+   * @param {Event} event
+   * @return void
+   */
+  DataGrid.prototype._onFilterUnapply =
+  function _onFilterUnapply(event) {
+    var $applied = $(event.currentTarget);
+    var name = $applied.data('grid-reset-filter');
+    var $filter = this._getEl(this._getSelector('filter', name));
+
+    event.preventDefault();
+
+    if ($filter.prop('tagName') === 'OPTION') {
+      $filter.closest('select').val(
+        $filter.closest('select').find('option:first').val()
+      );
+    }
+
+    this.removeFilter(name);
+    this.refresh();
+  };
+
+  /**
+   * Handles applied group filters removal.
+   *
+   * @param {Event} event
+   * @return void
+   */
+  DataGrid.prototype._onGroupFilterUnapply =
+  function _onGroupFilterUnapply(event) {
+    var $applied = $(event.currentTarget);
+    var name = $applied.data('grid-reset-group');
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (! name) {
+      $applied = $applied.parents('[data-grid-group]');
+      name = $applied.data('grid-group');
+    }
+
+    this._removeGroupFilters(name);
+    this._resetLayouts();
+    this.refresh();
+  };
+
+  /**
+   * Handles sort click.
+   *
+   * @param {Event} event
+   * @return void
+   */
+  DataGrid.prototype._onSort =
+  function _onSort(event) {
+    var $elem = $(event.currentTarget);
+
+    event.preventDefault();
+
+    this._extractSortsFromClick($elem, event.shiftKey);
+
+    this.refresh();
+  };
+
+  /**
+   * Handles page click.
+   *
+   * @param {Event} event
+   * @return void
+   */
+  DataGrid.prototype._onPaginate =
+  function _onPaginate(event) {
+    var $page = $(event.currentTarget);
+
+    $(this).trigger('dg:switching', {grid: this, page: $page});
+
+    event.preventDefault();
+
+    this.applyScroll()
+      ._handlePageChange($page);
+
+    $(this).trigger('dg:switched', {grid: this, page: $page});
+  };
+
+  /**
+   * Handles throttle click.
+   *
+   * @param {Event} event
+   * @return void
+   */
+  DataGrid.prototype._onThrottle =
+  function _onThrottle(event) {
+    event.preventDefault();
+
+    this.opt.pagination.throttle += this.pagination.baseThrottle;
+
+    this.refresh();
+  };
+
+  /**
+   * Handles download.
+   *
+   * @param {Event} event
+   * @return void
+   */
+  DataGrid.prototype._onDownload =
+  function _onDownload(event) {
+    var type = $(event.currentTarget).data('grid-download');
+
+    event.preventDefault();
+
+    document.location = this.opt.source + '?' + this._buildAjaxURI(type);
+  };
+
+  /**
+   * Handles layout switching.
+   *
+   * @param {Event} event
+   * @return void
+   */
+  DataGrid.prototype._onLayoutChange =
+  function _onLayoutChange(event) {
+    var layout = $(event.currentTarget).data('grid-switch-layout');
+    layout = layout.split(':');
+
+    this.setLayout(layout[0], layout[1]);
+  };
+
+  /**
+   * Applies a filter.
+   *
+   * @param {Object} filter
+   * @return {DataGrid|null}
+   */
+  DataGrid.prototype.applyFilter =
+  function applyFilter(filter) {
+    if (this._isFilterApplied(filter)) {
+      return;
+    }
+
+    $(this).trigger('dg:applying', {filter: filter});
+
+    this.appliedFilters.push(filter);
+
+    $(this).trigger('dg:applied', {filter: filter});
+
+    return this;
+  };
+
+  /**
+   * Initialize default filters and sorts.
+   *
+   * @return void
+   */
+  DataGrid.prototype.applyDefaults =
+  function applyDefaults() {
+    var $filter;
+    var $sort;
+    var sorts;
+    var sort;
+    var direction;
+    var type;
+    var filterInfo;
+
+    // Default filter elements
+    _.each(this._getEl(this._getSelector('filter-default')),
+      _.bind(function(filter) {
+        $filter = this._getEl(filter);
+
+        type = $filter.data('grid-type') || 'term';
+
+        this.availableFilters[type]._extractFromElement($filter, false);
+      }, this)
+    );
+
+    // Default filter presets
+    _.each(_.keys(this.opt.filters), _.bind(function(name) {
+      if (this.opt.filters[name].isDefault) {
+        $filter = this._getEl(this._getSelector('filter', name));
+
+        type = this.opt.filters[name].type || 'term';
+
+        if ($filter.length) {
+          this.availableFilters[type]._extractFromElement($filter, false);
+        } else {
+          filterInfo = {
+            name: name
+          };
+
+          filterInfo = _.extend(filterInfo, this.opt.filters[name]);
+
+          this.applyFilter(filterInfo);
+        }
+      }
+    }, this));
+
+    // Default sorts
+    $sort = this._getEl(this._getSelector('sort-default'));
+
+    if ($sort.length) {
+      sort = $sort.data('grid-sort');
+      sorts = sort.split(':');
+      direction = ! _.isUndefined(sorts[1]) ? sorts[1] : 'asc';
+
+      this.sorts.push({
+        column: sorts[0],
+        direction: direction
+      });
+    }
+  };
+
+  /**
+   * Removes a filter by name.
+   *
+   * @param {String} name
+   * @return void
+   */
+  DataGrid.prototype.removeFilter =
+  function removeFilter(name) {
+    var filter = _.find(this.appliedFilters, {name: name});
+
+    if (! filter) {
+      return;
+    }
+
+    $(this).trigger('dg:removing', {filter: filter});
+
+    this.appliedFilters = _.reject(
+      this.appliedFilters, function(query) {
+        return query.name === name;
+      }
+    );
+
+    if (this.opt.pagination.method === 'infinite') {
+      this._resetLayouts();
+    }
+
+    this.goToPage(1);
+
+    $(this).trigger('dg:removed', {filter: filter});
+  };
+
+  /**
+   * Remove filters by their group name.
+   *
+   * @param {String} group
+   * @return void
+   */
+  DataGrid.prototype._removeGroupFilters =
+  function _removeGroupFilters(group) {
+    var $group = $('[data-grid-group="' + group + '"]');
+
+    if (! $group.length) {
+      return;
+    }
+
+    $(this).trigger('dg:removing_group', {group: group});
+
+    _.each($group.find('[data-grid-filter]'), _.bind(function(filter) {
+      $(filter).removeClass(this.opt.cssClasses.appliedFilter);
+
+      this.removeFilter($(filter).data('grid-filter'));
+    }, this));
+
+    $(this).trigger('dg:removed_group', {group: $group});
+  };
+
+  /**
+   * Handles the page change from the pagination.
+   *
+   * @param {Object} $el
+   * @return {DataGrid}
+   */
+  DataGrid.prototype._handlePageChange =
+  function _handlePageChange($el) {
+    var page = $el.data('grid-page');
+
+    if (this.opt.pagination.method === 'infinite') {
+      $el.data('grid-page', ++page);
+    }
+
+    this.goToPage(page);
+
+    this.refresh();
+
+    return this;
+  };
+
+  /**
+   * Navigates to the given page.
+   *
+   * @param  {Number} page
+   * @return {DataGrid}
+   */
+  DataGrid.prototype.goToPage =
+  function goToPage(page) {
+    var pageNumber = parseInt(page, 10);
+
+    this.pagination.pageIndex = isNaN(pageNumber) ? 1 : page;
+
+    return this;
+  };
+
+  /**
+   * Sets the sort direction on the given element.
+   *
+   * @param  {Array} sorts
+   * @return void
+   */
+  DataGrid.prototype._setSortDirection =
+  function _setSortDirection(sorts) {
+    var grid = this.grid;
+    var ascClass = this.opt.cssClasses.ascClass;
+    var descClass = this.opt.cssClasses.descClass;
+    var remove;
+    var add;
+
+    // Remove all classes from other sorts
+    $(this._getPlainSortSelector())
+      .removeClass(ascClass)
+      .removeClass(descClass);
+
+    _.each(sorts, _.bind(function(sort) {
+      remove = sort.direction === 'asc' ? descClass : ascClass;
+      add = sort.direction === 'asc' ? ascClass : descClass;
+
+      $('[data-grid-sort^="' + sort.column + '"]' + grid + ',' +
+        grid + ' [data-grid-sort^="' + sort.column + '"]'
+      ).removeClass(remove).addClass(add);
+    }, this));
+  };
+
+  /**
+   * Resets group filters before applying new ones.
+   *
+   * @param {Object} $el
+   * @return void
+   */
+  DataGrid.prototype.resetBeforeApply =
+  function resetBeforeApply($filter) {
+    var $resetFilter = $filter.parents('[data-grid-reset-filter]');
+    var $resetGroup = $filter.parents('[data-grid-reset-group]');
+    var $group;
+    var group;
+
+    if (this.opt.pagination.method === 'infinite') {
+      this._resetLayouts();
+    }
+
+    if ($filter.closest('[data-grid-reset]').length) {
+      this.reset();
+      return;
+    }
+
+    if (! _.isEmpty($filter.data('grid-reset-filter'))) {
+      this.removeFilter($filter.data('grid-reset-filter'));
+    } else if (
+      ! _.isUndefined($filter.data('grid-reset-filter')) &&
+      !_.isUndefined($filter.data('grid-search'))
+    ) {
+      _.each(
+        _.filter(
+          this.appliedFilters, {type: 'search'}
+        ),
+        _.bind(function(filter) {
+          this.removeFilter(filter.name);
+        }, this)
+      );
+    }
+
+    if (! _.isEmpty($filter.data('grid-reset-group'))) {
+      this._removeGroupFilters($filter.data('grid-reset-group'));
+    }
+
+    if (! _.isEmpty($resetFilter.data('grid-reset-filter'))) {
+      this.removeFilter($resetFilter.data('grid-reset-filter'));
+    }
+
+    if ($resetGroup.length) {
+      if (! _.isEmpty($resetGroup.data('grid-reset-group'))) {
+        this._removeGroupFilters($resetGroup.data('grid-reset-group'));
+      } else {
+        $group = $filter.closest('[data-grid-group]');
+        group = $group.data('grid-group');
+
+        this._removeGroupFilters(group);
+      }
+    }
+  };
+
+  /**
+   * Determines whether a filter is already applied or not.
+   *
+   * @param {Object} filter
+   * @return {Boolean}
+   */
+  DataGrid.prototype._isFilterApplied =
+  function _isFilterApplied(filter) {
+    return _.isObject(_.find(this.appliedFilters, {name: filter.name}));
+  };
+
+  /**
+   * Trims the given value.
+   *
+   * @param {String} value
+   * @return {String}
+   */
+  DataGrid.prototype._cleanup =
+  function _cleanup(value) {
+    return $.trim(value);
+  };
+
+  /**
+   * Extracts sorts from clicked element.
+   *
+   * @param {Object} $el
+   * @param {Boolean} multi
+   * @return void
+   */
+  DataGrid.prototype._extractSortsFromClick =
+  function _extractSortsFromClick($el, multi) {
+    var isMulti = multi && this.opt.sorting.multicolumn;
+    var opt = this.opt;
+    var sortArray = $el.data('grid-sort').split(':');
+    var column = _.trim(sortArray[0]);
+    var direction = _.trim(sortArray[1]) || 'asc';
+    var sort = _.find(this.sorts, {column: column});
+
+    if (! column) {
+      return;
+    }
+
+    // Reset page for infinite grids
+    if (opt.pagination.method === 'infinite') {
+      this._resetLayouts();
+
+      this.goToPage(1);
+    }
+
+    $(this).trigger('dg:sorting', {sort: sort});
+
+    if (! sort) {
+      sort = {
+        column: column,
+        direction: direction
+      };
+
+      if (isMulti) {
+        this.sorts.push(sort);
+      } else {
+        this.sorts = [sort];
+      }
+    } else {
+      if (
+        opt.sorting.column === column &&
+        sort.direction === opt.sorting.direction ||
+        sort.direction === direction
+      ) {
+        sort.direction = (sort.direction === 'asc') ? 'desc' : 'asc';
+
+        if (! isMulti) {
+          this.sorts = [sort];
+        }
+      } else {
+        this.sorts = _.reject(
+          this.sorts, function(oldSort) {
+            return oldSort.column === sort.column;
+          }
+        );
+      }
+    }
+
+    $(this).trigger('dg:sorted', {sort: this.sorts});
+  };
+
+  /**
+   * Parses sort expressions.
+   *
+   * @param {String} sortRaw
+   * @return {Array}
+   */
+  DataGrid.prototype._parseSort =
+  function _parseSort(sortRaw) {
+    return _.compact(
+      _.map(
+        sortRaw.split(this.opt.delimiter.query),
+        _.bind(function(expression) {
+          var sort = expression.split(this.opt.delimiter.expression);
+
+          if (_.isEmpty(_.trim(sort))) {
+            return;
+          }
+
+          return {
+            column: _.trim(sort[0]),
+            direction: _.trim(sort[1]) || 'asc',
+          };
+        }, this)
+      )
+    );
+  };
+
+  /**
+   * Sets sorts.
+   *
+   * @param {Array} sorts
+   * @return void
+   */
+  DataGrid.prototype.setSort =
+  function setSort(sorts) {
+    this.sorts = (! _.isEmpty(sorts)) ? sorts : [];
+  };
+
+  /**
+   * Extracts filters from route.
+   *
+   * @param {Array} routes
+   * @return void
+   */
+  DataGrid.prototype._extractFiltersFromRoute =
+  function _extractFiltersFromRoute(routes) {
+    var extracted = false;
+    var type;
+
+    this.appliedFilters = [];
+
+    _.each(routes, _.bind(function(fragment) {
+      for (type in _.invert(_.keys(this.availableFilters))) {
+        if (_.has(this.availableFilters, type)) {
+          extracted =
+            this.availableFilters[type].extractFromRoute(fragment) ||
+            false;
+        }
+
+        if (extracted) {
+          break;
+        }
+      }
+    }, this));
+  };
+
+  /**
+   * Extracts sorts from route.
+   *
+   * @param {String} sortRoute
+   * @return void
+   */
+  DataGrid.prototype._extractSortsFromRoute =
+  function _extractSortsFromRoute(sortRoute) {
+    var sorts = sortRoute.split(this.opt.sorting.delimiter);
+    var newSort;
+
+    _.each(sorts, _.bind(function(sort) {
+      newSort = sort.split(this.opt.delimiter.expression);
+
+      this.sorts = _.reject(
+        this.sorts, function(query) {
+          return query.column === newSort[0];
+        }
+      );
+
+      this.sorts.push({
+        column: _.trim(newSort[0]),
+        direction: _.trim(newSort[1]),
+      });
+    }, this));
+  };
+
+  /**
+   * Extracts the current page from the route.
+   *
+   * @param {String} page
+   * @return void
+   */
+  DataGrid.prototype._extractPageFromRoute =
+  function _extractPageFromRoute(page) {
+    var pageArray = page.split(this.opt.delimiter.expression);
+
+    if (_.isEmpty(pageArray[1]) || pageArray[1] <= 0) {
+      this.pagination.pageIndex = 1;
+    } else {
+      this.pagination.pageIndex = parseInt(pageArray[1], 10);
+    }
+  };
+
+  /**
+   * Extracts threshold from route.
+   *
+   * @param {String} threshold
+   * @return void
+   */
+  DataGrid.prototype._extractThresholdFromRoute =
+  function _extractThresholdFromRoute(threshold) {
+    var extractedThreshold = threshold.split(this.opt.delimiter.expression)[1];
+
+    this.setThreshold(extractedThreshold);
+  };
+
+  /**
+   * Extracts throttle from route.
+   *
+   * @param {String} throttle
+   * @return void
+   */
+  DataGrid.prototype._extractThrottleFromRoute =
+  function _extractThrottleFromRoute(throttle) {
+    var extractedThrottle = throttle.split(this.opt.delimiter.expression)[1];
+
+    this.setThrottle(extractedThrottle);
+  };
+
+  /**
+   * Extracts layout from route.
+   *
+   * @param {@string} layout
+   * @return void
+   */
+  DataGrid.prototype._extractLayoutFromRoute =
+  function _extractLayoutFromRoute(layout) {
+    var _this = this;
+    var layouts = layout.substr(7).split(',');
+    var layoutParts;
+
+    _.each(layouts, _.bind(function(layout) {
+      layoutParts = layout.split(this.opt.delimiter.expression);
+
+      _this.setLayout(layoutParts[0], layoutParts[1], false);
+    }, this));
+  };
+
+  /**
+   * Build filter fragment.
+   *
+   * @return {String}
+   */
+  DataGrid.prototype._buildFilterFragment =
+  function _buildFilterFragment() {
+    return _.flatten(_.map(this.appliedFilters, _.bind(function(index) {
+      if (_.has(this.availableFilters, index.type)) {
+        return this.availableFilters[index.type].buildFragment(index);
+      }
+    }, this)));
+  };
+
+  /**
+   * Build filter fragment.
+   *
+   * @return {String}
+   */
+  DataGrid.prototype.buildDefaultFilterFragment =
+  function buildDefaultFilterFragment() {
+    return _.flatten(_.map(this.appliedFilters, _.bind(function(index) {
+      if (_.has(this.availableFilters, index.type)) {
+        return this.availableFilters[index.type].buildFragment(index);
+      }
+    }, this)));
+  };
+
+  /**
+   * Build sort fragment.
+   *
+   * @return {String}
+   */
+  DataGrid.prototype._buildSortFragment =
+  function _buildSortFragment() {
+    var delimiter = this.opt.delimiter.expression;
+
+    var sorts = _.compact(_.map(this.sorts, _.bind(function(sort) {
+      if (
+        (sort.column !== this.opt.sorting.column ||
+        sort.direction !== this.opt.sorting.direction)
+      ) {
+        return sort.column + delimiter + sort.direction;
+      }
+    }, this)));
+
+    if (sorts.length) {
+      return sorts.join(this.opt.sorting.delimiter);
+    }
+  };
+
+  /**
+   * Build page fragment.
+   *
+   * @return {String}
+   */
+  DataGrid.prototype._buildPageFragment =
+  function _buildPageFragment() {
+    if (
+      this.pagination.pageIndex > 1 &&
+      this.opt.pagination.method !== 'infinite'
+    ) {
+      return 'page' +
+        this.opt.delimiter.expression +
+        this.pagination.pageIndex;
+    }
+  };
+
+  /**
+   * Build layout fragment.
+   *
+   * @return {String}
+   */
+  DataGrid.prototype._buildLayoutFragment =
+  function _buildLayoutFragment() {
+    var fragments = [];
+
+    // Skip layouts for infinite grids
+    if (this.opt.pagination.method === 'infinite') {
+      return;
+    }
+
+    _.each(this.baseLayouts, _.bind(function(layout, key) {
+      if (key !== layout) {
+        fragments.push(key + this.opt.delimiter.expression + layout);
+      }
+    }, this));
+
+    if (! _.isEmpty(fragments)) {
+      return 'layout' + this.opt.delimiter.expression + fragments.join(',');
+    }
+  };
+
+  /**
+   * Build throttle fragment.
+   *
+   * @return {String}
+   */
+  DataGrid.prototype._buildThrottleFragment =
+  function _buildThrottleFragment() {
+    if (! this.opt.pagination.throttle) {
+      return;
+    }
+
+    if (
+      this.defaults.pagination.throttle !== this.opt.pagination.throttle
+    ) {
+      return 'throttle' +
+        this.opt.delimiter.expression +
+        this.opt.pagination.throttle;
+    }
+  };
+
+  /**
+   * Build threshold fragment.
+   *
+   * @return {String}
+   */
+  DataGrid.prototype._buildThresholdFragment =
+  function _buildThresholdFragment() {
+    if (! this.opt.pagination.threshold) {
+      return;
+    }
+
+    if (
+      this.defaults.pagination.threshold !== this.opt.pagination.threshold
+    ) {
+      return 'threshold' +
+        this.opt.delimiter.expression +
+        this.opt.pagination.threshold;
+    }
+  };
+
+  /**
+   * Grabs all the results from the server.
+   *
+   * @return void
+   */
+  DataGrid.prototype._fetchResults =
+  function _fetchResults(force) {
+    force = force !== undefined ? force : false;
+
+    var _this = this;
+    var uri = this._buildAjaxURI();
+
+    // Only render if the ajax uri hasn't changed. (layout changes)
+    if (this.currentUri === uri && force !== true) {
+      this._render();
+    } else {
+      $(this).trigger('dg:fetching', {grid: this});
+
+      this._showLoader();
+
+      $.ajax({
+        url: this.opt.source,
+        dataType: 'json',
+        data: uri,
+      })
+        .done(function(data) {
+          _this.response = data;
+
+          _this._render();
+        })
+        .fail(_.bind(this._renderFailed, this));
+    }
+
+    this.currentUri = uri;
+  };
+
+  /**
+   * Handles ajax response rendering
+   *
+   * @param {Object} response
+   * @return void
+   */
+  DataGrid.prototype._render =
+  function _render(response) {
+    response = response !== undefined ? response : this.response;
+
+    this.initial = false;
+    var active;
+    var layout;
+    var data;
+    var action;
+
+    if (this.pagination.pageIndex > response.pages) {
+      this.pagination.pageIndex = response.pages;
+
+      this.refresh();
+
+      return false;
+    }
+
+    _.each(_.keys(this.layouts), _.bind(function(key) {
+      active = _.isUndefined(
+        this.layouts[key].layout.data('grid-layout-disabled')
+      );
+
+      if (! active) {
+        return;
+      }
+
+      layout = this.layouts[key].layout;
+
+      data = this.layouts[key].template({grid: this, response: response, pagination: this.buildPagination(response)});
+      action = this.layouts[key].action === 'update' ?
+        'html' : this.layouts[key].action;
+
+      // Render template
+      layout[action](data);
+
+      // Trigger layout event
+      layout.trigger('dg:layout_rendered');
+    }, this));
+
+    this._setSortDirection(response.sort);
+
+    this._hideLoader();
+
+    this.searchActive = false;
+
+    $(this).trigger('dg:hashchange');
+
+    this.callback();
+
+    $(this).trigger('dg:fetched', {response: response});
+  };
+
+  /**
+   * Handles ajax failure response.
+   *
+   * @param {Object} jqXHR
+   * @param {String} textStatus
+   * @param {Object} errorThrown
+   * @return void
+   */
+  DataGrid.prototype._renderFailed =
+  function _renderFailed(jqXHR, textStatus, errorThrown) {
+    console.error('fetchResults ' + jqXHR.status, errorThrown);
+
+    this.searchActive = false;
+  };
+
+  /**
+   * Builds the hash fragment.
+   *
+   * @return {String}
+   */
+  DataGrid.prototype.buildHash =
+  function buildHash() {
+    var base = _.compact(_.flatten([
+      this._buildFilterFragment(),
+      this._buildSortFragment(),
+      this._buildPageFragment(),
+      this._buildLayoutFragment(),
+      this._buildThrottleFragment(),
+      this._buildThresholdFragment()
+    ])).join('/');
+
+    var hash = this._getBaseHash() + base;
+
+    return hash;
+  };
+
+  /**
+   * Builds the ajax uri.
+   *
+   * @param {String} download
+   * @return {String}
+   */
+  DataGrid.prototype._buildAjaxURI =
+  function _buildAjaxURI(download) {
+    var params = {
+      filters: [],
+      page: this.pagination.pageIndex,
+      method: this.opt.pagination.method,
+    };
+
+    if (this.opt.pagination.threshold) {
+      params.threshold = this.opt.pagination.threshold ?
+        this.opt.pagination.threshold : this.defaults.pagination.threshold;
+    }
+
+    if (this.opt.pagination.throttle) {
+      params.throttle = this.opt.pagination.throttle ?
+        this.opt.pagination.throttle : this.defaults.pagination.throttle;
+    }
+
+    _.each(this.appliedFilters, _.bind(function(filter) {
+      if (_.has(this.availableFilters, filter.type)) {
+        params.filters = _.flatten(
+          params.filters.concat(
+            this.availableFilters[filter.type].buildParams(filter)
+          )
+        );
+      }
+    }, this));
+
+    if (! _.isEmpty(this.sorts)) {
+      params.sort = _.map(this.sorts, _.bind(function(sort) {
+        return {
+          column: sort.column,
+          direction: sort.direction,
+        };
+      }, this));
+    }
+
+    if (download) {
+      params.download = download;
+    }
+
+    return $.param(params);
+  };
+
+  /**
+   * Builds the pagination.
+   *
+   * @param {Object} json
+   * @return {Object}
+   */
+  DataGrid.prototype.buildPagination =
+  function buildPagination(json) {
+    var page = json.page;
+    var next = json.nextPage;
+    var prev = json.previousPage;
+    var total = json.pages;
+
+    switch (this.opt.pagination.method) {
+    case 'single':
+    case 'group':
+      return this._buildRegularPagination(page, next, prev, total);
+    case 'infinite':
+      return this._buildInfinitePagination(page, next, total);
+    }
+  };
+
+  /**
+   * Builds regular pagination.
+   *
+   * @param {Number} page
+   * @param {Number} next
+   * @param {Number} prev
+   * @param {Number} total
+   * @return {Object}
+   */
+  DataGrid.prototype._buildRegularPagination =
+  function _buildRegularPagination(page, next, prev, total) {
+    var perPage = this._calculatePagination();
+    var pageLimit;
+    var pageStart;
+
+    if (this.response.threshold > this.response.filtered) {
+      pageLimit = this.response.filtered;
+    } else if (this.pagination.pageIndex === 1) {
+      pageLimit = perPage > this.response.filtered ?
+        this.response.filtered : perPage;
+    } else {
+      pageLimit =
+        this.response.total < (perPage * this.pagination.pageIndex) ?
+        this.response.filtered : (perPage * this.pagination.pageIndex);
+    }
+
+    if (perPage === 0) {
+      pageStart = 0;
+    } else {
+      if (this.pagination.pageIndex === 1) {
+        if (this.response.filtered > 0) {
+          pageStart = 1;
+        } else {
+          pageStart = 0;
+        }
+      } else {
+        pageStart = perPage * (this.pagination.pageIndex - 1) + 1;
+      }
+    }
+
+    return {
+      pageStart: pageStart,
+      pageLimit: pageLimit,
+      nextPage: next,
+      previousPage: prev,
+      page: page,
+      pages: total,
+      total: this.response.total,
+      filtered: this.response.filtered,
+      throttle: this.opt.pagination.throttle ?
+        this.opt.pagination.throttle : this.defaults.pagination.throttle,
+      threshold: this.opt.pagination.threshold ?
+        this.opt.pagination.threshold : this.defaults.pagination.threshold,
+      perPage: perPage,
+    };
+  };
+
+  /**
+   * Builds the infinite pagination.
+   *
+   * @param {Number} page
+   * @param {Number} next
+   * @param {Number} total
+   * @return {Object}
+   */
+  DataGrid.prototype._buildInfinitePagination =
+  function _buildInfinitePagination(page, next, total) {
+    return (! next) ? null : {
+      page: page,
+      total: total,
+      infinite: true,
+    };
+  };
+
+  /**
+   * Calculate results per page.
+   *
+   * @return {Number}
+   */
+  DataGrid.prototype._calculatePagination =
+  function _calculatePagination() {
+    switch (this.response.method) {
+    case 'single':
+    case 'infinite':
+      return this.response.throttle ?
+        this.response.throttle : this.defaults.pagination.throttle;
+    case 'group':
+      return Math.ceil(
+        this.response.filtered / (
+          this.response.throttle ?
+            this.response.throttle : this.defaults.pagination.throttle
+        )
+      );
+    }
+  };
+
+  /**
+   * Shows the loading bar.
+   *
+   * @return void
+   */
+  DataGrid.prototype._showLoader =
+  function _showLoader() {
+    var effect = this.opt.loader.showEffect;
+    var duration = this.opt.loader.duration;
+    var $loader = this._getEl(this._getLoaderSelector());
+
+    if (! $loader.length) {
+      return;
+    }
+
+    $loader.finish()[effect]({
+      duration: duration,
+    });
+  };
+
+  /**
+   * Hides the loading bar.
+   *
+   * @return void
+   */
+  DataGrid.prototype._hideLoader =
+  function _hideLoader() {
+    var effect = this.opt.loader.hideEffect;
+    var duration = this.opt.loader.duration;
+    var $loader = this._getEl(this._getLoaderSelector());
+
+    if (! $loader.length) {
+      return;
+    }
+
+    $loader.finish()[effect]({
+      duration: duration,
+    });
+  };
+
+  /**
+   * Resets Data Grid.
+   *
+   * @return {DataGrid}
+   */
+  DataGrid.prototype.reset =
+  function reset() {
+    var $search = $(this._getSearchSelector());
+    var $sort = this._getEl(this._getSelector('sort'));
+    var $group = this._getEl(this._getSelector('group', null, 'select'));
+    var sort;
+
+    $(this).trigger('dg:resetting');
+
+    // Elements
+    $sort.removeClass(this.opt.cssClasses.ascClass)
+      .removeClass(this.opt.cssClasses.ascClass);
+    $search.find('input').val('');
+    $search.find('select').prop('selectedIndex', 0);
+    $group.find(':eq(0)').prop('selected', true);
+
+    // Defaults
+    this.defaults = _.cloneDeep(this.originalDefaults);
+    this.opt.pagination = _.clone(this.originalDefaults.pagination);
+
+    // Filters
+    this.appliedFilters = [];
+
+    // Sort
+    this.sorts = [];
+
+    if (this.opt.sorting.column) {
+      sort = this.opt.sorting.column +
+        this.opt.delimiter.expression +
+        this.opt.sorting.direction;
+
+      this._extractSortsFromRoute(sort);
+    }
+
+    // Layout
+    this._initLayouts();
+
+    // Reset infinite layouts
+    if (this.opt.pagination.method === 'infinite') {
+      this._resetLayouts();
+    }
+
+    // Pagination
+    this.pagination.pageIndex = 1;
+
+    $(this).trigger('dg:reset');
+
+    return this;
+  };
+
+  /**
+   * Refreshes Data Grid
+   *
+   * @return {DataGrid}
+   */
+  DataGrid.prototype.refresh =
+  function refresh(force) {
+    this._fetchResults(force);
+
+    return this;
+  };
+
+  /**
+   * Returns the grids base hash.
+   *
+   * @return {String}
+   */
+  DataGrid.prototype._getBaseHash =
+  function _getBaseHash() {
+    if (this.manager.grids.length === 1) {
+      return '';
+    }
+
+    return this.key + '/';
+  };
+
+  /**
+   * Returns an element from the dom.
+   *
+   * @param {String} selector
+   * @return {Object}
+   */
+  DataGrid.prototype._getEl =
+  function _getEl(selector) {
+    return this.$body.find(selector);
+  };
+
+  /**
+   * Returns the data grid element selector.
+   *
+   * @return {String}
+   */
+  DataGrid.prototype._getGridSelector =
+  function _getGridSelector() {
+      return '[data-grid="' + this.key + '"]';
+    };
+
+  /**
+   * Returns the element selector based
+   * on type, value, prefix and postfix.
+   *
+   * @param {String} type
+   * @param {String} value
+   * @param {String} prefix
+   * @param {String} postfix
+   * @return {String}
+   */
+  DataGrid.prototype._getSelector =
+  function _getSelector(type, value, prefix, postfix) {
+    var gridSelector = this._getGridSelector();
+    var selector = '';
+
+    if (! _.isUndefined(prefix) && ! _.isNull(prefix)) {
+      selector += prefix;
+    }
+
+    selector += '[data-grid';
+
+    if (! _.isUndefined(type) && ! _.isNull(type)) {
+      selector += '-' + type;
+    }
+
+    if (! _.isUndefined(value) && ! _.isNull(value)) {
+      selector += '="' + value + '"';
+    }
+
+    selector += ']';
+
+    if (! _.isUndefined(postfix) && ! _.isNull(postfix)) {
+      selector += postfix;
+    }
+
+    return selector + gridSelector + ',' +
+      gridSelector + ' ' + selector;
+  };
+
+  /**
+   * Returns the data grid global reset selector.
+   *
+   * @return {String}
+   */
+  DataGrid.prototype._getGlobalResetSelector =
+  function _getGlobalResetSelector() {
+    return this._getSelector(
+      'reset', null, null, ':not([data-grid-filter]):not([data-grid-group])'
+    );
+  };
+
+  /**
+   * Returns the data grid filter reset selector.
+   *
+   * @return {String}
+   */
+  DataGrid.prototype._getResetFilterSelector =
+  function _getResetFilterSelector() {
+    return this._getSelector('reset-filter', null, null, ':not(form)');
+  };
+
+  /**
+   * Returns the data grid filter group reset selector.
+   *
+   * @return {String}
+   */
+  DataGrid.prototype._getResetGroupSelector =
+  function _getResetGroupSelector() {
+    return this._getSelector('reset-group', null, null, ':not([data-grid-group][data-grid-reset-group])');
+  };
+
+  /**
+   * Returns the data grid sort selector.
+   *
+   * @return {String}
+   */
+  DataGrid.prototype._getPlainSortSelector =
+  function _getPlainSortSelector() {
+    return this._getSelector('sort', null, null, ':not([data-grid-filter])');
+  };
+
+  /**
+   * Returns the data grid term selector.
+   *
+   * @return {String}
+   */
+  DataGrid.prototype._getTermSelector =
+  function _getTermSelector() {
+    return this._getSelector(
+      'filter', null, null, ':not([data-grid-type="range"])'
+    );
+  };
+
+  /**
+   * Returns the data grid loader selector.
+   *
+   * @return {String}
+   */
+  DataGrid.prototype._getLoaderSelector =
+  function _getLoaderSelector() {
+    var gridSelector = this._getGridSelector();
+    var loader = this.opt.loader.element;
+
+    return gridSelector + loader + ',' + gridSelector + ' ' + loader;
+  };
+
+  /**
+   * Returns the data grid search selector.
+   *
+   * @param {String} value
+   * @return {String}
+   */
+  DataGrid.prototype._getSearchSelector =
+  function _getSearchSelector(value) {
+    var gridSelector = this._getGridSelector();
+    var selector = '[data-grid-search]' + gridSelector;
+
+    if (value) {
+      selector += ' option[value=' + value + ']';
+    }
+
+    selector += ',' + gridSelector + ' ' + '[data-grid-search]';
+
+    if (value) {
+      selector += ' option[value=' + value + ']';
+    }
+
+    return selector;
+  };
+
+  /**
+   * Returns the data grid range filter selector.
+   *
+   * @param {String} filter
+   * @param {String} type
+   * @return {String}
+   */
+  DataGrid.prototype._getRangeFilterSelector =
+  function _getRangeFilterSelector(filter, type) {
+    var gridSelector = this._getGridSelector();
+
+    return '[data-grid-filter="' + filter + '"]' +
+      '[data-grid-range="' + type + '"]' +
+      gridSelector + ',' +
+      gridSelector + ' ' +
+      '[data-grid-filter="' + filter + '"]' +
+      '[data-grid-range="' + type + '"]';
+  };
+
+  /**
+   * Data grid callback.
+   *
+   * @return {DataGrid}
+   */
+  DataGrid.prototype.callback =
+  function callback() {
+    var _callback = this.opt.callback;
+
+    if (_.isFunction(_callback)) {
+      _callback.call(this);
+    }
+
+    return this;
+  };
+
+  /**
+   * Applies the scroll feature animation.
+   *
+   * @return {DataGrid}
+   */
+  DataGrid.prototype.applyScroll =
+  function applyScroll() {
+    var scroll = this.opt.pagination.scroll;
+
+    if (_.isFunction(scroll)) {
+      scroll();
+    } else if (scroll) {
+      $(document.body).animate({
+        scrollTop: $(scroll).offset().top
+      }, 200);
+    }
+
+    return this;
+  };
+
+  /**
+   * Check for operators.
+   *
+   * @return {Boolean}
+   */
+  DataGrid.prototype._checkOperator =
+  function _checkOperator(value) {
+    return />|<|!=|=|<=|>=|<>/.test(value);
+  };
+
+  /**
+   * Sets the scroll value.
+   *
+   * @param  element  string
+   * @return void
+   */
+  DataGrid.prototype.setScroll =
+  function setScroll(element) {
+    this.opt.pagination.scroll = element;
+  };
+
+  /**
+   * Returns the throttle.
+   *
+   * @return {Number}
+   */
+  DataGrid.prototype.getThrottle =
+  function getThrottle() {
+    return this.opt.pagination.throttle;
+  };
+
+  /**
+   * Sets the throttle.
+   *
+   * @param  value  int
+   * @return void
+   */
+  DataGrid.prototype.setThrottle =
+  function setThrottle(value) {
+    this.opt.pagination.throttle = parseInt(value, 10);
+  };
+
+  /**
+   * Returns the threshold.
+   *
+   * @return {Number}
+   */
+  DataGrid.prototype.getThreshold =
+  function getThreshold() {
+    return this.opt.pagination.threshold;
+  };
+
+  /**
+   * Sets the threshold.
+   *
+   * @param  value  int
+   * @return void
+   */
+  DataGrid.prototype.setThreshold =
+  function setThreshold(value) {
+    this.opt.pagination.threshold = parseInt(value, 10);
+  };
+
+  /**
+   * Creates a new TermFilter.
+   *
+   * @param {DataGrid} grid
+   * @return void
+   */
+  function TermFilter(grid) {
+    this.grid = grid;
+  }
+
+  /**
+   * Initializes the TermFilter.
+   *
+   * @return void
+   */
+  TermFilter.prototype.init = function init() {
+    this._listeners();
+  };
+
+  /**
+   * Adds listeners.
+   *
+   * @return void
+   */
+  TermFilter.prototype._listeners =
+  function _listeners() {
+    this.grid.$body.on('click',
+      this.grid._getTermSelector(),
+      _.bind(this._onFilter, this)
+    );
+
+    this.grid.$body.on('change',
+      this.grid._getSelector('group', null, 'select'),
+      _.bind(this._onSelectFilter, this)
+    );
+  };
+
+  /**
+   * Extracts filter data from a url fragment.
+   *
+   * @param {String} fragment
+   * @return void
+   */
+  TermFilter.prototype.extractFromRoute =
+  function extractFromRoute(fragment) {
+    var $filter = this.grid._getEl(this.grid._getSelector('filter', fragment));
+    var filterInfo;
+
+    // Set the matching option if we're dealing with a select
+    if ($filter[0] !== undefined && $filter[0].nodeName === 'OPTION') {
+      $filter.parent().val($filter.val());
+    }
+
+    if (! _.has(this.grid.opt.filters, fragment) && ! $filter.length) {
+      return;
+    } else if (_.has(this.grid.opt.filters, fragment) && ! $filter.length) {
+      filterInfo = {
+        name: fragment
+      };
+
+      filterInfo = _.extend(filterInfo, this.grid.opt.filters[fragment]);
+
+      this.grid.applyFilter(filterInfo);
+
+      return;
+    }
+
+    this._extractFromElement($filter, false);
+
+    return true;
+  };
+
+  /**
+   * Builds url fragment from filter data.
+   *
+   * @param {TermFilter} filter
+   * @return {String}
+   */
+  TermFilter.prototype.buildFragment =
+  function buildFragment(filter) {
+    return filter.name;
+  };
+
+  /**
+   * Builds ajax request params from filter data.
+   *
+   * @param {TermFilter} filter
+   * @return {Object}
+   */
+  TermFilter.prototype.buildParams =
+  function buildParams(filter) {
+    return _.map(filter.query, _.bind(function(query) {
+      var queryString = {};
+
+      if (query.operator) {
+        queryString[query.column] = '|' +
+          query.operator + this.grid._cleanup(query.value) +
+          '|';
+      } else {
+        queryString[query.column] = this.grid._cleanup(query.value);
+      }
+
+      return queryString;
+    }, this));
+  };
+
+  /**
+   * Extracts filters from element.
+   *
+   * @param {Object} $filter
+   * @param {Boolean} refresh
+   * @return void
+   */
+  TermFilter.prototype._extractFromElement =
+  function _extractFromElement($filter, refresh) {
+    refresh = refresh !== undefined ? refresh : true;
+    var sort = $filter.data('grid-sort');
+    var filter = $filter.data('grid-filter');
+    var resetGroup = $filter.data('grid-reset-group');
+
+    if (! _.isEmpty(sort)) {
+      this.grid.setSort(this.grid._parseSort(sort));
+    }
+
+    if (filter) {
+      this.grid.removeFilter(filter);
+      this.grid.resetBeforeApply($filter);
+      this._apply($filter);
+    } else if (! _.isUndefined(resetGroup)) {
+      this.grid.resetBeforeApply($filter);
+    }
+
+    $filter.addClass(this.grid.opt.cssClasses.appliedFilter);
+
+    if (refresh) {
+      this.grid.goToPage(1);
+
+      this.grid.refresh();
+    }
+  };
+
+  /**
+   * Handles filter click.
+   *
+   * @param {Event} event
+   * @return void
+   */
+  TermFilter.prototype._onFilter =
+  function _onFilter(event) {
+    var $filter = $(event.currentTarget);
+    var type = $filter.data('grid-type') || 'term';
+
+    event.preventDefault();
+
+    if (type !== 'term') {
+      return;
+    }
+
+    this.grid.applyScroll();
+
+    this._extractFromElement($filter);
+  };
+
+  /**
+   * Handles select filter change.
+   *
+   * @param {Event} event
+   * @return void
+   */
+  TermFilter.prototype._onSelectFilter =
+  function _onSelectFilter(event) {
+    var $select = $(event.currentTarget);
+    var $filter = $select.find(':selected');
+    var type = $filter.data('grid-type') || 'term';
+
+    if (type !== 'term') {
+      return;
+    }
+
+    this.grid.applyScroll();
+
+    this._extractFromElement($filter);
+  };
+
+  /**
+   * Applies a term filter.
+   *
+   * @param {Object} filter
+   * @return void
+   */
+  TermFilter.prototype._apply =
+  function _apply($filter) {
+    var filter = $filter.data('grid-filter');
+    var label = $filter.data('grid-label') || '';
+    var query = $filter.data('grid-query') || '';
+    var filterInfo = {
+      name: filter,
+      type: 'term',
+      label: label
+    };
+
+    if (_.has(this.grid.opt.filters, filter)) {
+      filterInfo = _.extend(filterInfo, this.grid.opt.filters[filter]);
+    } else {
+      if (query.length) {
+        filterInfo.query = this._parseQuery(query);
+      }
+    }
+
+    this.grid.applyFilter(filterInfo);
+  };
+
+  /**
+   * Parses query strings.
+   *
+   * @param {String} queryRaw
+   * @return {Object}
+   */
+  TermFilter.prototype._parseQuery =
+  function _parseQuery(queryRaw) {
+    return _.compact(
+      _.map(
+        queryRaw.split(this.grid.opt.delimiter.query),
+        _.bind(function(expression) {
+          var query;
+          var queryInfo;
+
+          if (_.isEmpty(expression)) {
+            return;
+          }
+
+          query = _.trim(expression).split(this.grid.opt.delimiter.expression);
+
+          if (query.length === 3) {
+            queryInfo = {
+              column: query[0],
+              value: this.grid._cleanup(query[2]),
+              operator: this.grid._checkOperator(query[1]) ? query[1] : null,
+            };
+          } else if (query.length === 2) {
+            queryInfo = {
+              column: query[0],
+              value: this.grid._cleanup(query[1]),
+            };
+          }
+
+          return queryInfo;
+        }, this)
+      )
+    );
+  };
+
+  /**
+   * Creates a new RangeFilter.
+   *
+   * @param {DataGrid} grid
+   * @return void
+   */
+  function RangeFilter(grid) {
+    this.grid = grid;
+  }
+
+  /**
+   * Initializes the RangeFilter.
+   *
+   * @return void
+   */
+  RangeFilter.prototype.init = function init() {
+    this._listeners();
+  };
+
+  /**
+   * Adds listeners.
+   *
+   * @return void
+   */
+  RangeFilter.prototype._listeners =
+  function _listeners() {
+    var rangeSelector = this.grid._getSelector('type', 'range');
+
+    this.grid.$body.on('click',
+      rangeSelector,
+      _.bind(this._onRange, this)
+    );
+
+    this.grid.$body.on('change',
+      rangeSelector,
+      _.bind(this._onRangeChange, this)
+    );
+  };
+
+  /**
+   * Extracts filter data from a url fragment.
+   *
+   * @param {String} fragment
+   * @return void
+   */
+  RangeFilter.prototype.extractFromRoute =
+  function extractFromRoute(fragment) {
+    var delimiter = this.grid.opt.delimiter.expression;
+    var query = fragment.split(delimiter);
+    var name = query[0];
+    var $filter = this.grid._getEl(this.grid._getSelector('filter', name));
+    var type = $filter.data('grid-type');
+    var range = $filter.data('grid-range');
+    var date = $filter.data('grid-date');
+    var queryFrom = query[1];
+    var queryTo = query[2];
+    var serverDateFormat = $filter.data('grid-server-date-format');
+    var clientDateFormat = $filter.data('grid-client-date-format');
+    var isDate;
+    var $from;
+    var $to;
+
+    if (! $filter.length || type !== 'range') {
+      return;
+    }
+
+    if (_.isUndefined(range)) {
+      $filter.data(
+        'grid-query', name + delimiter + queryFrom + delimiter + queryTo
+      );
+    } else {
+      $from = this.grid._getEl(
+        this.grid._getRangeFilterSelector(name, 'start')
+      );
+      $to = this.grid._getEl(
+        this.grid._getRangeFilterSelector(name, 'end')
+      );
+
+      isDate = _.isUndefined(date) ? null : true;
+      serverDateFormat = _.isNull(serverDateFormat) ?
+        null : this.grid.opt.formats.serverDate;
+      clientDateFormat = _.isNull(clientDateFormat) ?
+        null : this.grid.opt.formats.clientDate;
+
+      if (serverDateFormat && moment && isDate) {
+        queryFrom = moment(queryFrom, serverDateFormat)
+          .format(clientDateFormat);
+
+        queryTo = moment(queryTo, serverDateFormat)
+          .format(clientDateFormat);
+      }
+
+      if ($from.is(':input')) {
+        $from.val(queryFrom);
+      } else {
+        $from.find(':input:first').val(queryFrom);
+      }
+
+      if ($to.is(':input')) {
+        $to.val(queryTo);
+      } else {
+        $to.find(':input:first').val(queryTo);
+      }
+    }
+
+    this._extractFromElement($filter, false);
+
+    return true;
+  };
+
+  /**
+   * Builds url fragment from filter data.
+   *
+   * @param {RangeFilter} filter
+   * @return {String}
+   */
+  RangeFilter.prototype.buildFragment =
+  function buildFragment(filter) {
+    var delimiter = this.grid.opt.delimiter.expression;
+
+    return filter.name +
+      delimiter +
+      filter.query.from +
+      delimiter +
+      filter.query.to;
+  };
+
+  /**
+   * Builds ajax request params from filter data.
+   *
+   * @param {RangeFilter} filter
+   * @return {Object}
+   */
+  RangeFilter.prototype.buildParams =
+  function buildParams(filter) {
+    var query = filter.query;
+    var queryString = {};
+
+    queryString[query.column] = '|>=' + query.from + '|<=' + query.to + '|';
+
+    return queryString;
+  };
+
+  /**
+   * Handles range clicks.
+   *
+   * @param {Event} event
+   * @return void
+   */
+  RangeFilter.prototype._onRange =
+  function _onRange(event) {
+    var $filter = $(event.currentTarget);
+    var type = $filter.data('grid-type') || 'range';
+
+    event.preventDefault();
+
+    if (type !== 'range' || !_.isUndefined($filter.data('grid-range'))) {
+      return;
+    }
+
+    this._extractFromElement($filter);
+  };
+
+  /**
+   * Handles range changes.
+   *
+   * @param {Event} event
+   * @return void
+   */
+  RangeFilter.prototype._onRangeChange =
+  function _onRangeChange(event) {
+    var $filter = $(event.currentTarget);
+    var type = $filter.data('grid-type');
+
+    event.preventDefault();
+
+    if (type !== 'range') {
+      return;
+    }
+
+    this._extractFromElement($filter);
+  };
+
+  /**
+   * Extracts range filters from element.
+   *
+   * @param {Object} $filter
+   * @param {Boolean} refresh
+   * @return void
+   */
+  RangeFilter.prototype._extractFromElement =
+  function _extractFromElement($filter, refresh) {
+    refresh = refresh !== undefined ? refresh : true;
+    var name = $filter.data('grid-filter');
+    var label = $filter.data('grid-label');
+    var sort = $filter.data('grid-sort');
+    var date = $filter.data('grid-date');
+    var serverDate = $filter.data('grid-server-date-format');
+    var clientDate = $filter.data('grid-client-date-format');
+    var range = $filter.data('grid-range');
+    var delimiter = this.grid.opt.delimiter.expression;
+    var isDate = _.isUndefined(date) ? null : true;
+    var serverDateFormat = _.isNull(serverDate) ?
+      null : this.grid.opt.formats.serverDate;
+    var clientDateFormat = _.isNull(clientDate) ?
+      null : this.grid.opt.formats.clientDate;
+    var query = $filter.data('grid-query');
+    var filter;
+    var column;
+    var $from;
+    var queryFrom;
+    var $to;
+    var queryTo;
+
+    if (_.isUndefined(range)) {
+      query = query.split(delimiter);
+      column = query[0];
+      queryFrom = query[1];
+      queryTo = query[2];
+    } else {
+      $from = this.grid._getEl(
+        this.grid._getRangeFilterSelector(name, 'start')
+      );
+      $to = this.grid._getEl(
+        this.grid._getRangeFilterSelector(name, 'end')
+      );
+      column = $from.data('grid-query').split(delimiter)[0];
+      queryFrom = $from.is(':input') ?
+        $from.val() : $from.find(':input:first').val() ||
+        $from.data('grid-query').split(delimiter)[1];
+      queryTo = $to.is(':input') ?
+        $to.val() : $to.find(':input:first').val() ||
+        $to.data('grid-query').split(delimiter)[1];
+    }
+
+    if (_.isEmpty(queryFrom) || _.isEmpty(queryTo)) {
+      return;
+    }
+
+    this.grid.removeFilter(name);
+
+    this.grid.resetBeforeApply($filter);
+
+    if (! _.isEmpty(sort)) {
+      this.grid.setSort(this._parseSort(sort));
+    }
+
+    if (serverDateFormat && moment && isDate) {
+      queryFrom = moment(queryFrom, clientDateFormat).format(serverDateFormat);
+
+      queryTo = moment(queryTo, clientDateFormat).format(serverDateFormat);
+    }
+
+    filter = {
+      name: name,
+      type: 'range',
+      label: label,
+      query: {
+        column: column,
+        from: queryFrom,
+        to: queryTo,
+      },
+    };
+
+    this.grid.applyFilter(filter);
+
+    $filter.addClass(this.grid.opt.cssClasses.appliedFilter);
+
+    if (refresh) {
+      this.grid.goToPage(1);
+
+      this.grid.refresh();
+    }
+  };
+
+  /**
+   * Creates a new SearchFilter.
+   *
+   * @param {DataGrid} grid
+   * @return void
+   */
+  function SearchFilter(grid) {
+    this.grid = grid;
+  }
+
+  /**
+   * Initializes the SearchFilter.
+   *
+   * @return void
+   */
+  SearchFilter.prototype.init = function init() {
+    this._listeners();
+  };
+
+  /**
+   * Adds listeners.
+   *
+   * @return void
+   */
+  SearchFilter.prototype._listeners =
+  function _listeners() {
+    this.grid.$body.on('submit',
+      this.grid._getSearchSelector(),
+      _.bind(this._onSearch, this)
+    );
+  };
+
+  /**
+   * Extracts filter data from a url fragment.
+   *
+   * @param {String} fragment
+   * @return void
+   */
+  SearchFilter.prototype.extractFromRoute =
+  function extractFromRoute(fragment) {
+    var route = fragment.split(this.grid.opt.delimiter.expression);
+    var $option = this.grid._getEl(this.grid._getSearchSelector(route[0]));
+    var filter;
+
+    if (route[0] !== 'all' && ! $option.length) {
+      return;
+    }
+
+    if (route.length === 3) {
+      filter = {
+        name: 'search:' + route[0] + ':' +
+          route[2].toLowerCase(),
+        type: 'search',
+        query: {
+          column: route[0],
+          value: this.grid._cleanup(route[2]),
+          operator: route[1],
+        },
+      };
+    } else {
+      filter = {
+        name: 'search:' + route[0] + ':' +
+          route[1].toLowerCase(),
+        type: 'search',
+        query: {
+          column: route[0],
+          value: this.grid._cleanup(route[1]),
+        },
+      };
+    }
+
+    this.grid.applyFilter(filter);
+
+    return true;
+  };
+
+  /**
+   * Builds url fragment from filter data.
+   *
+   * @param {SearchFilter} filter
+   * @return {String}
+   */
+  SearchFilter.prototype.buildFragment =
+  function buildFragment(filter) {
+    return filter.query.column +
+      this.grid.opt.delimiter.expression +
+      filter.query.value;
+  };
+
+  /**
+   * Builds ajax request params from filter data.
+   *
+   * @param {SearchFilter} filter
+   * @return {Object}
+   */
+  SearchFilter.prototype.buildParams =
+  function buildParams(filter) {
+    var query = filter.query;
+    var queryString = {};
+
+    if (query.column === 'all') {
+      queryString = (query.operator) ?
+        '|' + query.operator + this.grid._cleanup(query.value) + '|' :
+        this.grid._cleanup(query.value);
+    } else {
+      queryString[query.column] = (query.operator) ?
+        '|' + query.operator + this.grid._cleanup(query.value) + '|' :
+        this.grid._cleanup(query.value);
+    }
+
+    return queryString;
+  };
+
+  /**
+   * Handles search form submission.
+   *
+   * @param {Event} event
+   * @return void
+   */
+  SearchFilter.prototype._onSearch =
+  function _onSearch(event) {
+    var $form = $(event.currentTarget);
+
+    event.preventDefault();
+
+    this._extractFromElement($form);
+  };
+
+  /**
+   * Extracts filters from search form.
+   *
+   * @param {Object} $form
+   * @return void
+   */
+  SearchFilter.prototype._extractFromElement =
+  function _extractFromElement($form) {
+    var $input = $form.find('input');
+    var $select = $form.find('select:not([data-grid-group])');
+    var column = $select.val() || 'all';
+    var value = $.trim($input.val());
+    var operator = $form.data('grid-operator');
+    var filter;
+
+    this.grid.searchActive = true;
+
+    clearTimeout(this.grid.searchTimeout);
+
+    if (! value.length) {
+      return;
+    }
+
+    if ($select.length) {
+      $select.prop('selectedIndex', 0);
+    }
+
+    // Remove live search filter
+    this.grid.appliedFilters = _.reject(
+      this.grid.appliedFilters, function(query) {
+        return query.type === 'live';
+      }
+    );
+
+    filter = {
+      name: 'search:' + column + ':' +
+        value.toLowerCase(),
+      type: 'search',
+      query: {
+        column: column,
+        value: this.grid._cleanup(value),
+        operator: operator,
+      },
+    };
+
+    $input.val('').data('old', '');
+
+    this.grid.resetBeforeApply($form);
+
+    if (! _.isEmpty($form.data('grid-sort'))) {
+      this.grid.setSort(this._parseSort($form.data('grid-sort')));
+    }
+
+    this.grid.applyFilter(filter);
+
+    this.grid.goToPage(1);
+
+    this.grid.refresh();
+  };
+
+  /**
+   * Creates a new LiveFilter.
+   *
+   * @param {DataGrid} grid
+   * @return void
+   */
+  function LiveFilter(grid) {
+    this.grid = grid;
+  }
+
+  /**
+   * Initializes the LiveFilter.
+   *
+   * @return void
+   */
+  LiveFilter.prototype.init = function init() {
+    this._listeners();
+  };
+
+  /**
+   * Adds listeners.
+   *
+   * @return void
+   */
+  LiveFilter.prototype._listeners =
+  function _listeners() {
+    if (this.grid.opt.search.live) {
+      this.grid.$body.on('keyup',
+        this.grid._getSearchSelector(),
+        _.bind(this._onLiveSearch, this)
+      );
+    }
+  };
+
+  /**
+   * Extracts filter data from a url fragment.
+   *
+   * @param {String} fragment
+   * @return void
+   */
+  LiveFilter.prototype.extractFromRoute =
+  function extractFromRoute() {
+
+  };
+
+  /**
+   * Builds url fragment from filter data.
+   *
+   * @param {LiveFilter} filter
+   * @return {String}
+   */
+  LiveFilter.prototype.buildFragment =
+  function buildFragment() {
+
+  };
+
+  /**
+   * Builds ajax request params from filter data.
+   *
+   * @param {LiveFilter} filter
+   * @return {Object}
+   */
+  LiveFilter.prototype.buildParams =
+  function buildParams(filter) {
+    return this.grid.availableFilters.search.buildParams(filter);
+  };
+
+  /**
+   * Handles live search.
+   *
+   * @param {Event} event
+   * @return void
+   */
+  LiveFilter.prototype._onLiveSearch =
+  function _onLiveSearch(event) {
+    var elem = $(event.currentTarget);
+
+    if (event.keyCode === 13) {
+      return;
+    }
+
+    event.preventDefault();
+
+    this._extractFromElement(elem);
+  };
+
+  /**
+   * Applies live search filter.
+   *
+   * @param {Object} $form
+   * @return void
+   */
+  LiveFilter.prototype._extractFromElement =
+  function _extractFromElement($form) {
+    if (this.grid.searchActive) {
+      return;
+    }
+
+    clearTimeout(this.grid.searchTimeout);
+
+    this.grid.searchTimeout = setTimeout(_.bind(function($formEl) {
+      var $input = $formEl.find('input');
+      var $select = $formEl.find('select:not([data-grid-group])');
+      var column = $select.val() || 'all';
+      var value = $.trim($input.val());
+      var old = $input.data('old');
+      var operator = $formEl.data('operator');
+      var filter;
+
+      if (this.grid.opt.pagination.method === 'infinite') {
+        this.grid._resetLayouts();
+      }
+
+      if (old) {
+        this.grid.appliedFilters = _.reject(
+          this.grid.appliedFilters, function(query) {
+            return query.type === 'live';
+          }
+        );
+
+        if (! value.length) {
+          this.grid.goToPage(1);
+
+          this.grid.refresh();
+
+          return;
+        }
+      }
+
+      filter = {
+        name: 'live',
+        type: 'live',
+        query: {
+          column: column,
+          value: this.grid._cleanup(value),
+          operator: operator,
+        },
+      };
+
+      $input.data('old', value);
+
+      this.grid.applyFilter(filter);
+
+      this.grid.goToPage(1);
+
+      this.grid.refresh();
+    }, this, $form), this.grid.opt.search.timeout);
+  };
+
+  var previousDataGridManager = global.DataGridManager;
+
+  DataGridManager.noConflict =
+  function noConflict() {
+    global.DataGridManager = previousDataGridManager;
+
+    return DataGridManager;
+  };
+
+  global.DataGridManager = DataGridManager;
+
+  var previousDataGrid = global.DataGrid;
+
+  DataGrid.noConflict =
+  function noConflict() {
+    global.DataGrid = previousDataGrid;
+
+    return DataGrid;
+  };
+
+  global.DataGrid = DataGrid;
+
+  var previousTermFilter = global.TermFilter;
+
+  TermFilter.noConflict =
+  function noConflict() {
+    global.TermFilter = previousTermFilter;
+
+    return TermFilter;
+  };
+
+  global.TermFilter = TermFilter;
+
+  var previousRangeFilter = global.RangeFilter;
+
+  RangeFilter.noConflict =
+  function noConflict() {
+    global.RangeFilter = previousRangeFilter;
+
+    return RangeFilter;
+  };
+
+  global.RangeFilter = RangeFilter;
+
+  var previousSearchFilter = global.SearchFilter;
+
+  SearchFilter.noConflict =
+  function noConflict() {
+    global.SearchFilter = previousSearchFilter;
+
+    return SearchFilter;
+  };
+
+  global.SearchFilter = SearchFilter;
+
+  var previousLiveFilter = global.LiveFilter;
+
+  LiveFilter.noConflict =
+  function noConflict() {
+    global.LiveFilter = previousLiveFilter;
+
+    return LiveFilter;
+  };
+
+  global.LiveFilter = LiveFilter;
+}(this);
