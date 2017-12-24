@@ -11,6 +11,10 @@ We do not give estimated times for completion on `Accepted` Proposals.
 
 ---
 
+### v6.0.0 - 2017-12-24
+
+- Updated for Platform 8.
+
 ### v5.0.1 - 2017-03-01
 
 `UPDATED`
