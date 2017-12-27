@@ -4,7 +4,7 @@
 
 		<figure>
 			<a href="{{ url()->toAdmin('/') }}">
-				<img src="{{ Asset::getUrl('platform/img/ornery-octopus.svg') }}" alt="Profile Image">
+				<img src="{{ Asset::getUrl('platform/img/hardy-hedgehog.svg') }}" alt="Profile Image">
 				<figcaption>@setting('platform.config.app.title')<span>@setting('platform-foundation.release_name')</span></figcaption>
 			</a>
 		</figure>
