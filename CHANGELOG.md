@@ -11,6 +11,12 @@ We do not give estimated times for completion on `Accepted` Proposals.
 
 ---
 
+### v6.0.2 - 2017-12-27
+
+`FIXED`
+
+- Config reference.
+
 ### v6.0.1 - 2017-12-27
 
 `REVISED`
