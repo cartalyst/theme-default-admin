@@ -1,15 +1,8 @@
-# Default Admin Theme Change Log
+# Changelog
 
-This project follows [Semantic Versioning](CONTRIBUTING.md).
+### v7.0.0 - 2019-09-12
 
-## Proposals
-
-We do not give estimated times for completion on `Accepted` Proposals.
-
-- [Accepted](https://github.com/cartalyst/theme-default-admin/labels/Accepted)
-- [Rejected](https://github.com/cartalyst/theme-default-admin/labels/Rejected)
-
----
+- Updated for Platform 9.
 
 ### v6.0.2 - 2017-12-27
 

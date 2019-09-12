@@ -1,4 +1,4 @@
-/**
+/*
  * Part of the Data Grid package.
  *
  * NOTICE OF LICENSE
@@ -9,11 +9,11 @@
  * bundled with this package in the LICENSE file.
  *
  * @package    Data Grid
- * @version    4.0.1
+ * @version    5.0.1
  * @author     Cartalyst LLC
  * @license    Cartalyst PSL
- * @copyright  (c) 2011-2017, Cartalyst LLC
- * @link       http://cartalyst.com
+ * @copyright  (c) 2011-2019, Cartalyst LLC
+ * @link       https://cartalyst.com
  */
 
 !function(global) {
@@ -285,6 +285,7 @@
         ascClass: 'asc',
         descClass: 'desc',
         appliedFilter: 'selected',
+        activeLayout: 'active',
       },
 
       sorting: {
@@ -838,7 +839,13 @@
    */
   DataGrid.prototype._onLayoutChange =
   function _onLayoutChange(event) {
-    var layout = $(event.currentTarget).data('grid-switch-layout');
+    var $el = $(event.currentTarget);
+    var layout = $el.data('grid-switch-layout');
+
+    this._getEl(this._getSelector('switch-layout')).removeClass(this.opt.cssClasses.activeLayout);
+
+    $el.addClass(this.opt.cssClasses.activeLayout);
+
     layout = layout.split(':');
 
     this.setLayout(layout[0], layout[1]);
@@ -1339,7 +1346,11 @@
     var layouts = layout.substr(7).split(',');
     var layoutParts;
 
+    this._getEl(this._getSelector('switch-layout')).removeClass(this.opt.cssClasses.activeLayout);
+
     _.each(layouts, _.bind(function(layout) {
+      _this._getEl(_this._getSelector('switch-layout', layout)).addClass(_this.opt.cssClasses.activeLayout);
+
       layoutParts = layout.split(this.opt.delimiter.expression);
 
       _this.setLayout(layoutParts[0], layoutParts[1], false);
