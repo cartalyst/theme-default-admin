@@ -1,5 +1,9 @@
 # Changelog
 
+### v7.0.1 - 2019-09-25
+
+- Welcome Mending Macaw!
+
 ### v7.0.0 - 2019-09-12
 
 - Updated for Platform 9.
