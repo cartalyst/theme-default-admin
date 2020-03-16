@@ -1,5 +1,9 @@
 # Changelog
 
+### v8.0.0 - TBA
+
+- Updated for Platform 10
+
 ### v7.0.1 - 2019-09-25
 
 - Welcome Mending Macaw!
