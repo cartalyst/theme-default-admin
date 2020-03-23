@@ -1,6 +1,6 @@
 # Changelog
 
-### v8.0.0 - TBA
+### v8.0.0 - 2020-03-23
 
 - Updated for Platform 10
 
