@@ -23,7 +23,7 @@
         }
     ],
     "require": {
-        "php": "^7.2.5",
+        "php": "^7.4 || ^8.0",
         "cartalyst/composer-installers": "^2.0"
     },
     "config": {
@@ -34,7 +34,7 @@
     "extra": {
         "component": "theme",
         "branch-alias": {
-            "dev-master": "8.0.x-dev"
+            "dev-master": "9.0.x-dev"
         }
     }
 }
