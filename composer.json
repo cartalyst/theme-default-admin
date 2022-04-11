@@ -23,7 +23,7 @@
         }
     ],
     "require": {
-        "php": "^7.4 || ^8.0",
+        "php": "^8.0",
         "cartalyst/composer-installers": "^2.0"
     },
     "config": {

@@ -12,7 +12,7 @@
  * @version    5.0.1
  * @author     Cartalyst LLC
  * @license    Cartalyst PSL
- * @copyright  (c) 2011-2019, Cartalyst LLC
+ * @copyright  (c) 2011-2022, Cartalyst LLC
  * @link       https://cartalyst.com
  */
 

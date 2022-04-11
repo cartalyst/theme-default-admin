@@ -3,5 +3,5 @@
 	"slug":        "admin::default",
 	"description": "The default admin theme.",
 	"author":      "Cartalyst LLC",
-	"version":     "9.0"
+	"version":     "10.0"
 }
